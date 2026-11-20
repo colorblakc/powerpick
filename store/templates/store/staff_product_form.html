@@ -1,0 +1,74 @@
+{# Form for staff to add or edit a product and its options. #}
+{% extends 'store/staff_base.html' %}
+{% block staff_title %}{% if product %}Edit {{ product.name }}{% else %}Add a product{% endif %}{% endblock %}
+{% block back %}<a class="back-link" href="{% url 'staff_products' %}"><svg class="i i--sm" aria-hidden="true"><use href="#i-arrow-left"/></svg>All products</a>{% endblock %}
+{% block heading %}{% if product %}Edit product{% else %}Add a product{% endif %}{% endblock %}
+{% block sub %}{% if product %}<p>{{ product.name }}</p>{% else %}<p>Customers see the product as soon as it is saved as available.</p>{% endif %}{% endblock %}
+{% block actions %}{% if product and product.available %}<a class="btn btn--ghost btn--sm" href="{% url 'detail' product.pk %}"><svg class="i" aria-hidden="true"><use href="#i-eye"/></svg>View in shop</a>{% endif %}{% endblock %}
+
+{% block staff_content %}
+<form method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
+  {% if form.errors %}<div class="notice notice--fault form-error-summary" role="alert"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg><div><b>This product was not saved.</b> Fix the {{ form.errors|length }} field{{ form.errors|length|pluralize }} marked below and save again.{% if form.non_field_errors %}{{ form.non_field_errors }}{% endif %}</div></div>{% endif %}
+  <div class="form-grid">
+    <div>
+      <section class="panel" aria-labelledby="f-details">
+        <h2 id="f-details">Details</h2>
+        {% include 'store/_staff_field.html' with field=form.name hint="The name customers see in the shop and on receipts. Include the rating or size." %}
+        <div class="field-pair">
+          {% include 'store/_staff_field.html' with field=form.brand %}
+          {% include 'store/_staff_field.html' with field=form.category %}
+        </div>
+        {% include 'store/_staff_field.html' with field=form.description hint="A short description of what the product is and where it is used." %}
+        {% include 'store/_staff_field.html' with field=form.specs hint="Ratings and measurements, one per line, for example: Rating: 32 A" %}
+      </section>
+      <section class="panel" aria-labelledby="f-variants">
+        <h2 id="f-variants">Options of the same product</h2>
+        <div class="guide"><p>Give products the same <b>group name</b>, brand and category to show them as one product with options, such as pack sizes. Each option keeps its own price and stock.</p>
+          <dl><dt>Group name</dt><dd>Shared by every option, for example “House wire 1.5 mm²”.</dd><dt>Option label</dt><dd>What differs, for example “90 m coil”. Each label must be different within the group.</dd></dl>
+          <p>Leave both blank for a product that has no options.</p></div>
+        <div class="field-pair" style="margin-top:var(--s4)">
+          {% include 'store/_staff_field.html' with field=form.variant_group hint="Pick an existing group or type a new one." %}
+          {% include 'store/_staff_field.html' with field=form.variant_label hint="" %}
+        </div>
+        <datalist id="variant-groups">{% for group in groups %}<option value="{{ group }}">{% endfor %}</datalist>
+      </section>
+    </div>
+    <div>
+      <section class="panel" aria-labelledby="f-sell">
+        <h2 id="f-sell">Price and stock</h2>
+        <div class="field-pair">
+          {% include 'store/_staff_field.html' with field=form.price hint="In rupees, above zero." %}
+          {% include 'store/_staff_field.html' with field=form.stock hint="Units on hand." %}
+        </div>
+        {% include 'store/_staff_check.html' with field=form.available hint="Untick to hide the product from the shop without deleting it." %}
+      </section>
+      <section class="panel" aria-labelledby="f-image">
+        <h2 id="f-image">Image</h2>
+        <div class="image-box">
+          <div class="image-preview{% if not product.image %} is-empty{% endif %}" data-image-preview>
+            {% if product.image %}<img src="{{ product.image.url }}" alt="Current product image" width="400" height="300">{% else %}<svg class="i i--lg" aria-hidden="true"><use href="#i-upload"/></svg><span>No image yet</span>{% endif %}
+          </div>
+          {% include 'store/_staff_field.html' with field=form.image hint="JPEG, PNG or WebP, up to 3 MB." %}
+          {% if product.image %}{% include 'store/_staff_check.html' with field=form.remove_image %}{% endif %}
+          <p class="hint" data-image-note aria-live="polite"></p>
+        </div>
+      </section>
+    </div>
+  </div>
+  <div class="form-bar">
+    <button class="btn" type="submit" data-busy><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>{% if product %}Save changes{% else %}Add product{% endif %}</button>
+    <a class="btn btn--ghost" href="{% url 'staff_products' %}">Cancel</a>
+  </div>
+</form>
+
+{% if product %}
+<section class="danger-zone" style="margin-top:var(--s6)" aria-labelledby="f-delete">
+  <h2 id="f-delete">Delete this product</h2>
+  {% if on_orders %}<p>{{ product.name }} is on past orders, so it cannot be deleted without losing its link from order history. Deleting hides it from the shop instead, and every receipt stays as it was.</p>
+  {% else %}<p>This removes {{ product.name }} permanently. It is on no orders. To keep it but stop selling it, untick “Available in shop” above.</p>{% endif %}
+  <form method="post" action="{% url 'staff_product_delete' product.pk %}" data-confirm="{% if on_orders %}Hide {{ product.name }} from the shop? It is on past orders, so it is kept.{% else %}Permanently delete {{ product.name }}? This cannot be undone.{% endif %}">{% csrf_token %}
+    <button class="btn btn--danger" type="submit"><svg class="i" aria-hidden="true"><use href="#i-trash"/></svg>{% if on_orders %}Hide from shop{% else %}Delete product{% endif %}</button></form>
+</section>
+{% endif %}
+{% endblock %}

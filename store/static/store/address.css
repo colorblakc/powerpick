@@ -1,0 +1,30 @@
+/* Structured Indian address: two columns on a desktop, one on a phone. Labels sit above each control. */
+.addr-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--s4); min-width: 0; align-items: start; }
+.addr-grid > * { min-width: 0; }
+.addr-grid .addr-wide { grid-column: 1 / -1; }
+.addr-grid .field { margin-bottom: var(--s4); }
+.addr-grid .field > label { display: block; }
+.addr-grid input, .addr-grid select { width: 100%; max-width: 100%; box-sizing: border-box; }
+.addr-grid .opt { font-weight: 400; color: var(--ink-3); font-size: var(--t-xs); margin-left: .35em; }
+.addr-grid .hint { font-size: var(--t-xs); color: var(--ink-3); margin: 0; }
+.addr-grid .field-error { display: flex; gap: .4em; align-items: flex-start; margin: 0; color: var(--fault); font-size: var(--t-xs); font-weight: 600; }
+.addr-grid .field-error .i { margin-top: .1em; flex: none; }
+.addr-grid .field.has-error input, .addr-grid .field.has-error select { border-color: var(--fault); }
+.addr-grid select:disabled { color: var(--ink-3); background: var(--wash); }
+/* The +91 prefix is fixed text inside the same border as the number */
+.in-prefix { display: flex; align-items: stretch; min-width: 0; border: 1px solid #BDB7D4; border-radius: var(--r); background: var(--paper); overflow: hidden; transition: border-color var(--fast), box-shadow var(--fast); }
+.in-prefix:hover { border-color: var(--ink-3); }
+.in-prefix:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-wash), 0 0 0 4px var(--blue); }
+.field.has-error .in-prefix { border-color: var(--fault); }
+.in-prefix-tag { display: grid; place-items: center; padding: 0 .75rem; border-right: 1px solid var(--line); background: var(--wash); color: var(--ink-2); font-weight: 600; font-size: var(--t-sm); font-variant-numeric: tabular-nums; }
+.in-prefix input:not([type=checkbox]):not([type=radio]) { border: 0; border-radius: 0; box-shadow: none; min-width: 0; flex: 1; background: transparent; }
+.in-prefix input:focus-visible { box-shadow: none; }
+.addr-country { max-width: none; display: flex; align-items: center; gap: .5rem; margin: 0 0 var(--s4); padding: var(--s2) var(--s3); background: var(--wash); border-radius: var(--r-sm, 8px); font-size: var(--t-sm); color: var(--ink-2); }
+.addr-country .i { flex: none; color: var(--ink-3); }
+.addr-country b { color: var(--ink); }
+.addr-grid [hidden] { display: none; }
+.addr-grid input[data-addr-city]:not([hidden]) + * , .addr-grid select + input[data-addr-city] { margin-top: var(--s2); }
+
+@media (max-width: 640px) {
+  .addr-grid { grid-template-columns: minmax(0, 1fr); }
+}

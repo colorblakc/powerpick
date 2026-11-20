@@ -1,0 +1,37 @@
+{% load static %}<!doctype html>
+{# Standalone on purpose: no base template, no context processors, no database. It renders when something is broken. #}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Something went wrong · Power Pick</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="{% static 'store/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'store/ui.css' %}">
+  <link rel="stylesheet" href="{% static 'store/motion.css' %}">
+  <link rel="stylesheet" href="{% static 'store/pages.css' %}">
+</head>
+<body class="page-error page-error--bare">
+  <header class="bare-mast">
+    <div class="wrap">
+      <a class="logo" href="/" aria-label="Power Pick home">
+        <img class="logo-img" src="/static/store/brand/lockup-light.webp" alt="Power Pick" width="96" height="44">
+      </a>
+    </div>
+  </header>
+  <main id="main" class="wrap err">
+    <div class="err-main">
+      <div class="err-copy">
+        <h1>Something went wrong on our side</h1>
+        <p>The shop hit a fault and could not finish what you asked for. Wait a moment and try again.</p>
+        <p>If you were checking out or paying, open your orders and check the order's status and payment status before you pay a second time.</p>
+        <p class="err-links">
+          <a class="btn" href="/">Back to the shop</a>
+          <a class="btn btn--ghost" href="/orders/">My orders</a>
+        </p>
+      </div>
+      <div class="err-art">{% include 'store/pages/_circuit_break.html' %}<p class="err-code"><span>Status <b>500</b></span><img class="err-mark" src="{% static 'store/brand/head-dark.png' %}" alt="" width="52" height="53"></p></div>
+    </div>
+  </main>
+</body>
+</html>

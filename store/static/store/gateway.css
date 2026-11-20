@@ -1,0 +1,45 @@
+/* Payment page: one stage that swaps between designed states, and the order details beside it. */
+.pay-layout { display: grid; grid-template-columns: minmax(0, 1fr) 22rem; gap: var(--s6); align-items: start; }
+.pay-main { display: grid; gap: var(--s5); max-width: 42rem; }
+.pay-side { display: grid; gap: var(--s4); }
+.pay-side .panel p { max-width: none; }
+.pay-side .panel p + p { margin-top: var(--s2); }
+
+.pay-state { display: grid; gap: var(--s4); padding: var(--s5); background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-lg); animation: state-in var(--med) var(--ease) both; }
+.pay-state[hidden] { display: none; }
+@keyframes state-in { from { opacity: 0; transform: translateY(6px); } }
+.state-head { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--s4); align-items: start; }
+.state-head h2 { font-size: var(--t-lg); line-height: 1.2; outline: none; }
+.state-head p { margin-top: var(--s2); color: var(--ink-3); max-width: 52ch; }
+.state-head p b { color: var(--ink); }
+.state-node { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; background: var(--paper); border: 2px solid #B8B5D6; color: var(--ink-3); }
+.state-node--live { background: var(--live); border-color: var(--live); color: var(--ink); box-shadow: 0 0 0 5px color-mix(in srgb, var(--live) 28%, transparent); }
+.state-node--ok { background: var(--ok); border-color: var(--ok); color: #fff; }
+.state-node--fault { background: var(--fault); border-color: var(--fault); color: #fff; }
+.state-node .i { width: 1.35rem; height: 1.35rem; stroke-width: 2; }
+.state-node--ok .i path { stroke-dasharray: 30; stroke-dashoffset: 30; animation: draw 520ms var(--ease) 120ms forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.spinner { width: 1.25rem; height: 1.25rem; border: 2.5px solid var(--ink); border-right-color: transparent; border-radius: 50%; animation: spin .8s linear infinite; }
+
+.pay-items { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.pay-items li { display: flex; justify-content: space-between; gap: var(--s4); padding: var(--s3) 0; border-bottom: 1px solid var(--line-soft); font-size: var(--t-sm); color: var(--ink); }
+.pay-items li span:last-child { white-space: nowrap; }
+.pay-state .sum-total { margin: 0; }
+.state-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3); }
+.pay-state .notice { font-size: var(--t-xs); }
+.pay-state .state-actions + p { max-width: none; }
+
+.pay-cancel { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3); }
+
+@media (max-width: 960px) {
+  .pay-layout { grid-template-columns: 1fr; }
+  .pay-main { max-width: none; }
+}
+@media (max-width: 560px) {
+  .pay-state { padding: var(--s4); }
+  .state-actions .btn { flex: 1 1 100%; }
+  .state-head { gap: var(--s3); }
+
+}
+.pay-side h2 { font-size: var(--t-lg); }
+.pay-cancel[hidden] { display: none; }

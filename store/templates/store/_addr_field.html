@@ -1,0 +1,8 @@
+{# One address field: label above, control, hint, inline error. Include with field=form.x, optional hint, prefix (+91), wide. #}
+<div class="field{% if field.errors %} has-error{% endif %}{% if wide %} addr-wide{% endif %}">
+  <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.name == 'line2' %} <span class="opt">optional</span>{% endif %}</label>
+  {% if prefix %}<div class="in-prefix"><span class="in-prefix-tag" aria-hidden="true">{{ prefix }}</span>{{ field }}</div>{% else %}{{ field }}{% endif %}
+  {% if field.name == 'city' %}<datalist id="{{ field.auto_id }}_list">{% for city in form.city_options %}<option value="{{ city }}">{% endfor %}</datalist>{% endif %}
+  {% if hint %}<p class="hint" id="{{ field.auto_id }}-hint">{{ hint }}</p>{% endif %}
+  {% if field.errors %}<p class="field-error" id="{{ field.auto_id }}-error"><svg class="i i--sm" aria-hidden="true"><use href="#i-alert"/></svg><span>{% for error in field.errors %}{{ error }}{% if not forloop.last %} {% endif %}{% endfor %}</span></p>{% endif %}
+</div>

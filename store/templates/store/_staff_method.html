@@ -1,0 +1,2 @@
+{% load static %}{# Payment method with its brand mark. Usage: {% include 'store/_staff_method.html' with method=payment.method %} #}
+<span class="method">{% if method == 'Razorpay' %}<img src="{% static 'store/pay/razorpay-default.svg' %}" alt="" width="16" height="16">{% endif %}{% if method == 'COD' %}Cash on delivery{% else %}{{ method }}{% endif %}</span>

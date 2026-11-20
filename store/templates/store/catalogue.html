@@ -1,0 +1,88 @@
+{# Shop page with search, filters, sorting, product cards and pagination. #}
+{% extends 'store/base.html' %}{% load static %}
+{% block title %}{% if query %}Results for “{{ query }}”{% else %}{{ heading }}{% endif %}{% if page.number > 1 %} · Page {{ page.number }}{% endif %} · Power Pick{% endblock %}
+{% block meta_description %}Browse electrical supplies with ratings, pack sizes, prices and live stock. Filter by category, brand, price and availability.{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'store/card.css' %}"><link rel="stylesheet" href="{% static 'store/catalogue.css' %}">{% endblock %}
+{% block content %}
+<div class="wrap shop">
+  <header class="shop-head">
+    <nav aria-label="Breadcrumb"><ol class="crumbs">
+      <li><a href="{% url 'home' %}">Home</a></li>
+      {% if request.GET.category__name %}<li><a href="{% url 'catalogue' %}">Shop</a></li><li aria-current="page">{{ request.GET.category__name }}</li>{% else %}<li aria-current="page">Shop</li>{% endif %}
+    </ol></nav>
+    <h1>{% if query %}Results for “{{ query }}”{% else %}{{ heading }}{% endif %}</h1>
+    <p class="shop-lede"><b>{{ total }}</b> product{{ total|pluralize }}{% if brands|length > 1 and not chips %} from {{ brands|length }} brands{% endif %}{% if page.paginator.num_pages > 1 %}<span> · showing {{ page.start_index }}–{{ page.end_index }}</span>{% endif %}, with live stock on every card.</p>
+  </header>
+
+  <div class="bar" data-bar>
+    <nav class="pills" aria-label="Categories">
+      <a class="pill{% if not request.GET.category__name %} is-on{% endif %}" href="{% url 'catalogue' %}"{% if not request.GET.category__name %} aria-current="page"{% endif %}>All</a>
+      {% for c in categories %}<a class="pill{% if request.GET.category__name == c.name %} is-on{% endif %}" href="{% url 'catalogue' %}?category__name={{ c.name|urlencode }}"{% if request.GET.category__name == c.name %} aria-current="page"{% endif %}>{{ c.name }}<span class="pill-n">{{ c.count }}</span></a>{% endfor %}
+    </nav>
+    <div class="bar-tools">
+      <details class="filter-box" data-filter-box>
+        <summary class="pill pill--tool"><svg class="i i--sm" aria-hidden="true"><use href="#i-sliders"/></svg>Filters{% if chips %}<span class="pill-count">{{ chips|length }}<span class="sr-only"> active</span></span>{% endif %}</summary>
+        <div class="filter-panel" role="group" aria-label="Filters">
+          <div class="filter-panel-head"><h2>Filters</h2><button class="filter-close" type="button" data-filter-close aria-label="Close filters"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+          <form id="filters" class="filter-form" action="{% url 'catalogue' %}" method="get">
+            {% if query %}<input type="hidden" name="q" value="{{ query }}">{% endif %}
+            <div class="field"><label for="f-category">Category</label>
+              <select id="f-category" name="category__name"><option value="">All categories</option>{% for c in categories %}<option value="{{ c.name }}"{% if request.GET.category__name == c.name %} selected{% endif %}>{{ c.name }} ({{ c.count }})</option>{% endfor %}</select></div>
+            <div class="field"><label for="f-brand">Brand</label>
+              <select id="f-brand" name="brand"><option value="">All brands</option>{% for brand in brands %}<option value="{{ brand }}"{% if request.GET.brand == brand %} selected{% endif %}>{{ brand }}</option>{% endfor %}</select></div>
+            <fieldset class="field price-range"><legend class="field-label">Price in ₹</legend>
+              <div class="price-pair">
+                <div><label for="f-min">Minimum</label><input id="f-min" type="number" inputmode="decimal" min="0" step="any" name="min" value="{{ request.GET.min }}" placeholder="0"></div>
+                <div><label for="f-max">Maximum</label><input id="f-max" type="number" inputmode="decimal" min="0" step="any" name="max" value="{{ request.GET.max }}" placeholder="No limit"></div>
+              </div></fieldset>
+            <label class="switch"><input type="checkbox" name="instock" value="1"{% if in_stock_only %} checked{% endif %}><span class="switch-track" aria-hidden="true"></span><span>In stock only</span></label>
+            <div class="filter-actions">
+              {% if chips %}<a class="btn btn--ghost" href="{% url 'catalogue' %}">Clear all</a>{% endif %}
+              <button class="btn" type="submit">Show results</button>
+            </div>
+          </form>
+        </div>
+      </details>
+      <div class="sort pill pill--tool"><label for="f-sort"><span class="sr-only">Sort by</span><svg class="i i--sm" aria-hidden="true"><use href="#i-filter"/></svg></label>
+        <select id="f-sort" name="sort" form="filters" data-autosubmit>
+          <option value="">Featured</option>
+          <option value="low"{% if request.GET.sort == 'low' %} selected{% endif %}>Price, low to high</option>
+          <option value="high"{% if request.GET.sort == 'high' %} selected{% endif %}>Price, high to low</option>
+          <option value="name"{% if request.GET.sort == 'name' %} selected{% endif %}>Name, A to Z</option>
+        </select></div>
+    </div>
+  </div>
+
+  {% if chips %}<ul class="chips" aria-label="Active filters">
+    {% for chip in chips %}<li><a class="chip" href="{{ chip.url }}" aria-label="Remove filter: {{ chip.label }}">{{ chip.label }}<svg class="i i--sm" aria-hidden="true"><use href="#i-x"/></svg></a></li>{% endfor %}
+    <li><a class="chip-clear" href="{% url 'catalogue' %}">Clear all</a></li>
+  </ul>{% endif %}
+
+  <section class="results" aria-labelledby="results-h" data-results>
+    <h2 class="sr-only" id="results-h">Products</h2>
+    <p class="sr-only" role="status">{{ total }} result{{ total|pluralize }}</p>
+    {% if products %}
+    <div class="grid">{% for product in products %}{% if forloop.first and page.number == 1 and total > 5 %}{% include 'store/card.html' with lead=True %}{% else %}{% include 'store/card.html' with lead=False %}{% endif %}{% endfor %}</div>
+    {% if page.paginator.num_pages > 1 %}
+    <nav class="pager" aria-label="Pages">
+      {% if page.has_previous %}<a class="pager-step" href="?{{ page_query }}page={{ page.previous_page_number }}" rel="prev"><svg class="i i--sm" aria-hidden="true"><use href="#i-arrow-left"/></svg><span>Previous</span></a>{% else %}<span class="pager-step" aria-disabled="true"><svg class="i i--sm" aria-hidden="true"><use href="#i-arrow-left"/></svg><span>Previous</span></span>{% endif %}
+      <ol>{% for number in page_range %}{% if number == page.paginator.ELLIPSIS %}<li class="gap" aria-hidden="true">…</li>{% elif number == page.number %}<li><a class="here" href="?{{ page_query }}page={{ number }}" aria-current="page" aria-label="Page {{ number }}, current page">{{ number }}</a></li>{% else %}<li><a href="?{{ page_query }}page={{ number }}" aria-label="Page {{ number }}">{{ number }}</a></li>{% endif %}{% endfor %}</ol>
+      {% if page.has_next %}<a class="pager-step" href="?{{ page_query }}page={{ page.next_page_number }}" rel="next"><span>Next</span><svg class="i i--sm" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>{% else %}<span class="pager-step" aria-disabled="true"><span>Next</span><svg class="i i--sm" aria-hidden="true"><use href="#i-arrow-right"/></svg></span>{% endif %}
+    </nav>{% endif %}
+    {% else %}
+    <div class="none">
+      <img class="none-art" src="{% static 'store/brand/mascot-search.webp' %}" alt="" width="220" height="231" loading="lazy">
+      <div class="none-copy">
+        <h2>{% if query %}Nothing matches “{{ query }}”{% else %}No products match these filters{% endif %}</h2>
+        <p>{% if chips %}Loosen one of the filters, or search by a rating or pack size such as 32 A or 2.5 mm².{% else %}This shop has no listed products yet. Please check back soon.{% endif %}</p>
+        {% if chips %}<ul class="chips">{% for chip in chips %}<li><a class="chip" href="{{ chip.url }}" aria-label="Remove filter: {{ chip.label }}">Remove {{ chip.label }}<svg class="i i--sm" aria-hidden="true"><use href="#i-x"/></svg></a></li>{% endfor %}</ul>
+        <a class="btn" href="{% url 'catalogue' %}">Clear all filters</a>{% endif %}
+        <div class="suggest"><h3>Browse a category instead</h3>
+          <ul>{% for c in categories %}<li><a class="pill" href="{% url 'catalogue' %}?category__name={{ c.name|urlencode }}">{{ c.name }}<span class="pill-n">{{ c.count }}</span></a></li>{% endfor %}</ul></div>
+      </div>
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'store/catalogue.js' %}" defer></script>{% endblock %}

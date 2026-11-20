@@ -1,0 +1,47 @@
+{# How customers can cancel eligible orders and what happens to stock. #}
+{% extends 'store/pages/_page_base.html' %}
+{% block toc %}
+<li><a href="#unpaid">Cancelling an unpaid order</a></li>
+<li><a href="#cod">Cancelling a cash on delivery order</a></li>
+<li><a href="#paid">After payment</a></li>
+<li><a href="#staff">What staff can do</a></li>
+<li><a href="#stock">What happens to the stock</a></li>
+<li><a href="#refunds">Refunds</a></li>
+{% endblock %}
+{% block page_body %}
+<section aria-labelledby="unpaid">
+  <h2 id="unpaid">Cancelling an unpaid order</h2>
+  <p>You can cancel your own order yourself while it is Pending and unpaid.</p>
+  <ol class="steps">
+    <li>Open the order from <a href="{% url 'orders' %}">your orders</a>.</li>
+    <li>Choose the option to cancel the unpaid order.</li>
+    <li>Before cancelling, Power Pick checks with Razorpay whether a payment has arrived. If one has, the order is not cancelled.</li>
+  </ol>
+</section>
+
+<section aria-labelledby="cod">
+  <h2 id="cod">Cancelling a cash on delivery order</h2>
+  <p>A cash on delivery order is Confirmed as soon as you place it. You can cancel it yourself while it is Pending or Confirmed: open it from <a href="{% url 'orders' %}">your orders</a> and choose Cancel order. Nothing was charged, so there is nothing to pay back. Once staff start processing the order, it can no longer be cancelled from your order page; see <a href="{% url 'page' 'contact' %}">Contact</a>.</p>
+</section>
+
+<section aria-labelledby="paid">
+  <h2 id="paid">After payment</h2>
+  <p>Once an order is paid, it is Confirmed and the cancel button is no longer offered. A paid order cannot be cancelled from your order page.</p>
+  <p>If a payment reaches Razorpay for an order that was already cancelled, the order is moved to Payment review so that store staff can look at it. It does not go ahead automatically.</p>
+</section>
+
+<section aria-labelledby="staff">
+  <h2 id="staff">What staff can do</h2>
+  <p>Store staff manage fulfilment. They move an order forward one stage at a time: Confirmed, Processing, Shipped, then Delivered. Staff can also cancel an order that is Pending, Confirmed or Processing, but only if it has not been paid and has not started a Razorpay payment, which includes cash on delivery orders that are not yet delivered. Orders that are Shipped or Delivered cannot be cancelled.</p>
+</section>
+
+<section aria-labelledby="stock">
+  <h2 id="stock">What happens to the stock</h2>
+  <p>Items are set aside as soon as an order is placed. When an unpaid or cash on delivery order is cancelled, whether by you or by staff, those items are returned to stock once, so they can be bought by someone else.</p>
+</section>
+
+<section aria-labelledby="refunds">
+  <h2 id="refunds">Refunds</h2>
+  <p>Power Pick does not publish a refund or returns policy on this site, and the assistant cannot cancel an order or a payment. If you have a question about a payment, see <a href="{% url 'page' 'contact' %}">Contact</a>.</p>
+</section>
+{% endblock %}

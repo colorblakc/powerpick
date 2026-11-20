@@ -1,0 +1,32 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block title %}Page not found · Power Pick{% endblock %}
+{% block meta_description %}This page could not be found. Search the catalogue or pick a category to carry on shopping.{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'store/pages.css' %}">{% endblock %}
+{% block body_class %}page-error{% endblock %}
+{% block content %}
+<div class="wrap err">
+  <div class="err-main">
+    <div class="err-copy">
+      <h1>This page is not on the circuit</h1>
+      <p>The address may be mistyped, or the product or page may have been removed. Search the catalogue, or pick up the line again from a category below.</p>
+      <form class="err-search" action="{% url 'catalogue' %}" role="search">
+        <label for="err-q" class="sr-only">Search products</label>
+        <svg class="i" aria-hidden="true"><use href="#i-search"/></svg>
+        <input id="err-q" type="search" name="q" placeholder="Search, for example 32 A MCB" autocomplete="off">
+        <button type="submit" class="btn">Search</button>
+      </form>
+      <p class="err-links"><a class="btn btn--ghost" href="{% url 'home' %}"><svg class="i" aria-hidden="true"><use href="#i-arrow-left"/></svg>Back to the shop</a></p>
+    </div>
+    <div class="err-art">{% include 'store/pages/_circuit_break.html' %}<p class="err-code"><span>Status <b>404</b></span><img class="err-mascot" src="{% static 'store/brand/mascot-search.webp' %}" alt="" width="96" height="101"></p></div>
+  </div>
+  {% if rail %}
+  <nav class="err-nodes" aria-label="Shop by category">
+    <h2>Pick up the line from a category</h2>
+    <ul class="ruled ruled--grid">
+      {% for node in rail %}<li><a href="{{ node.url }}"><svg class="i" aria-hidden="true"><use href="#{{ node.icon }}"/></svg>{{ node.name }}</a></li>{% endfor %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}

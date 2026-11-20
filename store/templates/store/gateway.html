@@ -1,0 +1,151 @@
+{# Payment screen. The browser opens Razorpay; the server confirms payment status. #}
+{% extends "store/base.html" %}{% load static shop_tags %}
+{% block title %}Payment for order {{ order.pk }} · Power Pick{% endblock %}
+{% block meta_description %}Pay for your Power Pick order securely online with Razorpay.{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'store/cart.css' %}"><link rel="stylesheet" href="{% static 'store/gateway.css' %}">{% endblock %}
+{% block content %}
+{% url 'receipt' order.pk as receipt_url %}
+<div class="wrap flow" id="pay" data-state="{{ state }}"
+     data-start="{% url 'gateway_start' order.pk %}" data-verify="{% url 'gateway_verify' order.pk %}" data-check="{% url 'gateway_reconcile' order.pk %}"
+     data-order="{{ order.pk }}" data-order-url="{% url 'order_detail' order.pk %}" data-receipt-url="{{ receipt_url }}">
+  <header class="flow-head">
+    <div>
+      <h1 id="pay-heading">Pay for order {{ order.pk }}</h1>
+      <p class="muted">Pay securely with Razorpay. Your order is held while you pay.</p>
+    </div>
+    {% include 'store/_steps.html' with current=3 %}
+  </header>
+  {% csrf_token %}
+
+  <div class="pay-layout">
+    <section class="pay-main" aria-labelledby="pay-heading" data-pay-stage>
+      <noscript><div class="notice notice--fault"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg><div><b>JavaScript is off.</b> Razorpay's payment window needs it. Turn it on for this site and reload to pay.</div></div></noscript>
+
+      {# Ready: the order, the amount and the one action #}
+      <div class="pay-state" data-pay-state="ready"{% if state != "ready" %} hidden{% endif %}>
+        <div class="state-head"><span class="state-node"><svg class="i" aria-hidden="true"><use href="#i-card"/></svg></span>
+          <div><h2 tabindex="-1">Review and pay</h2><p>You pay <b class="price">₹{{ order.total|floatformat:"2g" }}</b> to Power Pick through Razorpay.</p></div></div>
+        {% if retrying %}<div class="notice notice--warn" data-retry-note><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg><span>Your last payment attempt did not go through. You can try again with the same order.</span></div>{% endif %}
+        <ul class="pay-items">
+          {% for item in items %}<li><span>{{ item.name }} <span class="muted">× {{ item.quantity }}</span></span><span class="muted">₹{{ item.price|floatformat:"2g" }} each</span></li>{% endfor %}
+        </ul>
+        <p class="sum-total"><span>Total to pay</span><strong class="price">₹{{ order.total|floatformat:"2g" }}</strong></p>
+        <div class="state-actions">
+          <button type="button" class="btn btn--lg" data-act="pay"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg>Pay ₹{{ order.total|floatformat:"2g" }} with Razorpay</button>
+          <button type="button" class="btn btn--ghost" data-act="check">Check payment status</button>
+        </div>
+        <p class="muted xs">Already paid in another tab or window? Check the status instead of paying again.</p>
+        {% include 'store/_pay_strip.html' %}
+      </div>
+
+      {# Opening checkout #}
+      <div class="pay-state" data-pay-state="opening" hidden>
+        <div class="state-head"><span class="state-node state-node--live"><span class="spinner" aria-hidden="true"></span></span>
+          <div><h2 tabindex="-1">Opening secure checkout</h2><p>Preparing your payment with Razorpay. This takes a moment.</p></div></div>
+      </div>
+
+      {# Waiting for the Razorpay window #}
+      <div class="pay-state" data-pay-state="waiting" hidden>
+        <div class="state-head"><span class="state-node state-node--live"><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg></span>
+          <div><h2 tabindex="-1">Complete payment in the Razorpay window</h2><p>Keep this page open. Your order is confirmed here as soon as Razorpay reports the payment.</p></div></div>
+        <div class="state-actions"><button type="button" class="btn btn--ghost" data-act="reopen">Reopen payment window</button></div>
+      </div>
+
+      {# Verifying #}
+      <div class="pay-state" data-pay-state="verifying" hidden>
+        <div class="state-head"><span class="state-node state-node--live"><span class="spinner" aria-hidden="true"></span></span>
+          <div><h2 tabindex="-1" data-verify-title>Confirming with Razorpay</h2><p><b>Do not close this page.</b> We are checking the payment against your order.</p></div></div>
+      </div>
+
+      {# Success #}
+      <div class="pay-state" data-pay-state="success"{% if state != "success" %} hidden{% endif %}>
+        <div class="state-head state-head--mascot"><span class="state-node state-node--ok"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>
+          <div><h2 tabindex="-1">Payment confirmed</h2>
+            <p>Order <b data-order-no>#{{ order.pk }}</b> is confirmed.{% if payment.reference %} Razorpay reference <span class="mono" data-reference>{{ payment.reference }}</span>.{% else %} <span data-reference-wrap hidden>Razorpay reference <span class="mono" data-reference></span>.</span>{% endif %}</p></div><img class="mascot pay-mascot" src="{% static 'store/brand/mascot-thumbsup.webp' %}" alt="" width="84" height="104"></div>
+        <div class="state-actions">
+          <a class="btn btn--lg" href="{% url 'order_detail' order.pk %}" data-order-link>View order</a>
+          <a class="btn btn--ghost btn--lg" href="{{ receipt_url }}" data-receipt-link{% if not receipt_url %} hidden{% endif %}><svg class="i" aria-hidden="true"><use href="#i-receipt"/></svg>View receipt</a>
+          <a class="link-btn" href="{% url 'catalogue' %}">Continue shopping</a>
+        </div>
+      </div>
+
+      {# Failed #}
+      <div class="pay-state" data-pay-state="failed" hidden>
+        <div class="state-head"><span class="state-node state-node--fault"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></span>
+          <div><h2 tabindex="-1" data-fail-title>Payment did not go through</h2><p data-reason>The payment could not be completed.</p></div></div>
+        <div class="state-actions">
+          <button type="button" class="btn btn--lg" data-act="retry"><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg>Retry payment</button>
+          <button type="button" class="btn btn--ghost" data-act="check">Check payment status</button>
+        </div>
+        <p class="muted xs">Your items stay reserved while you retry. Cancel the order below to release them.</p>
+      </div>
+
+      {# Closed or dismissed #}
+      <div class="pay-state" data-pay-state="cancelled" hidden>
+        <div class="state-head"><span class="state-node"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg></span>
+          <div><h2 tabindex="-1">Payment window closed</h2><p>You closed Razorpay before paying, so no payment was confirmed. If you did pay, check the status before paying again.</p></div></div>
+        <div class="state-actions">
+          <button type="button" class="btn btn--lg" data-act="retry"><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg>Retry payment</button>
+          <button type="button" class="btn btn--ghost" data-act="check">Check payment status</button>
+        </div>
+      </div>
+
+      {# Pending or interrupted #}
+      <div class="pay-state" data-pay-state="pending" hidden>
+        <div class="state-head"><span class="state-node state-node--live"><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg></span>
+          <div><h2 tabindex="-1">Payment not confirmed yet</h2><p data-reason>We could not confirm this payment yet. If you paid, do not pay again. Check the status in a moment.</p></div></div>
+        <div class="state-actions">
+          <button type="button" class="btn btn--lg" data-act="check"><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg>Check payment status</button>
+          <button type="button" class="btn btn--ghost" data-act="retry" data-retry-only hidden>Retry payment</button>
+        </div>
+      </div>
+
+      {# Payment not set up #}
+      <div class="pay-state" data-pay-state="config"{% if state != "config" %} hidden{% endif %}>
+        <div class="state-head"><span class="state-node"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg></span>
+          <div><h2 tabindex="-1">Online payment is not available right now</h2><p>Your order is saved and its items are reserved. Try again a little later, or cancel the order to release the items.</p></div></div>
+        {% if user.is_staff %}<div class="notice notice--blue"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg><span><b>Staff:</b> set <span class="mono">RAZORPAY_KEY_ID</span> and <span class="mono">RAZORPAY_KEY_SECRET</span> in <span class="mono">.env</span>, then restart the server.</span></div>{% endif %}
+        <div class="state-actions"><a class="btn btn--ghost" href="{% url 'order_detail' order.pk %}">View order</a></div>
+      </div>
+
+      {# Awaiting staff review #}
+      {% if state == "review" %}
+      <div class="pay-state" data-pay-state="review">
+        <div class="state-head"><span class="state-node state-node--live"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg></span>
+          <div><h2 tabindex="-1">Payment received, order under review</h2><p>Razorpay confirmed a payment after this order was cancelled. Store staff will review it and contact you. Do not pay again.</p></div></div>
+        <div class="state-actions"><a class="btn btn--ghost" href="{% url 'order_detail' order.pk %}">View order</a></div>
+      </div>
+      {% endif %}
+
+      {# Order is no longer payable #}
+      {% if state == "closed" %}
+      <div class="pay-state" data-pay-state="closed">
+        <div class="state-head"><span class="state-node"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg></span>
+          <div><h2 tabindex="-1">This order is not awaiting payment</h2><p>Order {{ order.pk }} is {{ order.status|lower }}, so there is nothing to pay here.</p></div></div>
+        <div class="state-actions"><a class="btn" href="{% url 'order_detail' order.pk %}">View order</a><a class="link-btn" href="{% url 'catalogue' %}">Continue shopping</a></div>
+      </div>
+      {% endif %}
+
+      {% if state == "ready" or state == "config" %}
+      <form class="pay-cancel" method="post" action="{% url 'gateway_cancel' order.pk %}" data-confirm="Cancel this order? Its items go back to stock.">
+        {% csrf_token %}
+        <button type="submit" class="btn btn--danger btn--sm" data-cancel>Cancel order</button>
+        <span class="muted xs">Releases the reserved items. Not possible once a payment has been received.</span>
+      </form>
+      {% endif %}
+    </section>
+
+    <aside class="pay-side">
+      <section class="panel" aria-labelledby="pay-delivery-heading">
+        <h2 id="pay-delivery-heading">Delivery</h2>
+        <p>{% if order.name %}<strong>{{ order.name }}</strong><br>{% endif %}{{ order.address|linebreaksbr }}</p>
+        <p class="muted">{{ order.phone|phone }}</p>
+      </section>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}{% if can_pay %}
+<script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
+<script src="{% static 'store/gateway.js' %}" defer></script>
+{% endif %}{% endblock %}

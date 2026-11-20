@@ -1,0 +1,13 @@
+/* Each picture is a real radio button, so keyboard and screen reader users can choose it too. */
+.avatar-picker{border:0;padding:0;margin:0 0 1.25rem;min-width:0}
+.avatar-picker legend{font-weight:650;margin-bottom:1rem}
+.avatar-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(74px,1fr));gap:1rem;max-width:760px}
+.avatar-option{display:flex;justify-content:center;position:relative;cursor:pointer;margin:0}
+.avatar-option input{position:absolute;opacity:0;width:1px;height:1px}
+.avatar-option img{width:72px;height:72px;object-fit:cover;border-radius:50%;border:3px solid transparent;box-shadow:0 0 0 1px #d8d4df;transition:box-shadow .15s ease,border-color .15s ease}
+.avatar-option input:checked + img{border-color:#fff;box-shadow:0 0 0 3px #6942cf}
+.avatar-option input:focus-visible + img{outline:3px solid #211a38;outline-offset:5px}
+.avatar-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.mast-avatar,.avatar-current{object-fit:cover;border-radius:50%}
+@media (prefers-reduced-motion:reduce){.avatar-option img{transition:none}}
+.staff-profile-avatar{display:block;border-radius:50%;object-fit:cover;margin:.75rem 0}

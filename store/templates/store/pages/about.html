@@ -1,0 +1,57 @@
+{# Store information and links to the catalogue. #}
+{% extends 'store/pages/_page_base.html' %}
+{% block toc %}
+<li><a href="#what">What Power Pick is for</a></li>
+<li><a href="#founder">Founder</a></li>
+<li><a href="#catalogue">How the catalogue is organised</a></li>
+<li><a href="#compare">Comparing ratings, pack sizes and stock</a></li>
+<li><a href="#ordering">How ordering works</a></li>
+{% endblock %}
+{% block page_body %}
+<section aria-labelledby="what">
+  <h2 id="what">What Power Pick is for</h2>
+  <p>Power Pick is an online store for electrical supplies. It is built for electricians who need the right rating and pack size without ringing round, and for homeowners who want to replace a switch, add a socket or fit a light and need to see what suits the job.</p>
+  <p>Every listing shows its price in rupees (₹), its specifications and how many are in stock, so you can decide before you order.</p>
+</section>
+
+<section aria-labelledby="founder">
+  <h2 id="founder">Founder</h2>
+  <p>Power Pick was founded by <strong>Janhavi Pravin Jivanwal</strong>, who set out to make buying electrical supplies as clear as reading a spec sheet: the right part, the right rating and honest stock, in one place.</p>
+</section>
+
+<section aria-labelledby="catalogue">
+  <h2 id="catalogue">How the catalogue is organised</h2>
+  <p>Categories follow the path power takes through an installation, from the incoming supply to the loads. The category bar at the top of every page lists them in that order.</p>
+  {% if rail %}
+  <ul class="ruled">
+    {% for node in rail %}<li><a href="{{ node.url }}"><svg class="i" aria-hidden="true"><use href="#{{ node.icon }}"/></svg>{{ node.name }}</a></li>{% endfor %}
+  </ul>
+  {% endif %}
+  <p>You can also search by name, brand or rating, for example <a href="{% url 'catalogue' %}?q=32+A+MCB">32 A MCB</a>, and sort or filter inside a category.</p>
+</section>
+
+<section aria-labelledby="compare">
+  <h2 id="compare">Comparing ratings, pack sizes and stock</h2>
+  <p>Products of the same make that differ only in size or rating, such as a cable in several cross-sections or a board in several module counts, are grouped on one product page as options. Choose the option you need and its price and stock update with it.</p>
+  <dl class="plain">
+    <dt>Ratings and specifications</dt>
+    <dd>The specification list on each product page gives the figures that matter for that part. Check them against what your circuit and your local rules require. Power Pick cannot confirm that a product is right for your installation.</dd>
+    <dt>Pack sizes</dt>
+    <dd>The option label, for example a cross-section or a module count, tells you what you are buying. Compare the price of each option, not only the cheapest.</dd>
+    <dt>Stock</dt>
+    <dd>The stock gauge shows in stock, low, last few or out of stock. Stock is checked again at checkout, so a product that sells out while you shop is flagged before you pay.</dd>
+  </dl>
+</section>
+
+<section aria-labelledby="ordering">
+  <h2 id="ordering">How ordering works</h2>
+  <ol class="steps">
+    <li><strong>Add to cart.</strong> Choose the option and quantity. You cannot add more than the stock shown.</li>
+    <li><strong>Sign in or register.</strong> You need an account to check out. Browsing does not need one.</li>
+    <li><strong>Confirm delivery details.</strong> Your address and phone number come from your profile and the checkout form.</li>
+    <li><strong>Choose how to pay.</strong> Pay online through Razorpay secure checkout, or choose cash on delivery and pay when the order arrives.</li>
+    <li><strong>Follow the order.</strong> Each order moves through Pending, Confirmed, Processing, Shipped and Delivered. You can see its status on your <a href="{% url 'orders' %}">orders page</a>.</li>
+  </ol>
+  <p>See <a href="{% url 'page' 'delivery-and-payments' %}">Delivery and payments</a> and <a href="{% url 'page' 'cancellations' %}">Cancellations</a> for the details.</p>
+</section>
+{% endblock %}

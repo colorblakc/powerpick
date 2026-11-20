@@ -1,0 +1,43 @@
+{# Printable snapshot of the prices and delivery details saved with an order. #}
+{% extends "store/base.html" %}
+{% load static shop_tags %}
+{% block title %}Receipt for order #{{ order.pk }} · Power Pick{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'store/account.css' %}">{% endblock %}
+{% block body_class %}page-receipt{% endblock %}
+{% block content %}
+<div class="wrap receipt-wrap">
+  <div class="receipt-bar no-print">
+    <a href="{% if order.user_id == user.pk %}{% url 'order_detail' order.pk %}{% else %}{% url 'sale' order.pk %}{% endif %}"><svg class="i i--sm" aria-hidden="true"><use href="#i-arrow-left"/></svg>Back to order</a>
+    <button type="button" class="btn" data-print hidden><svg class="i" aria-hidden="true"><use href="#i-print"/></svg>Print receipt</button>
+    <span class="muted small" data-print-fallback>Use your browser's print command to print this receipt.</span>
+  </div>
+  <article class="receipt" aria-labelledby="receipt-h">
+    <header class="receipt-head">
+      <div class="receipt-brand"><img src="{% static 'store/brand/lockup-light.webp' %}" alt="Power Pick" width="140" height="64"></div>
+      <div><h1 id="receipt-h">Order receipt</h1></div>
+    </header>
+    <dl class="receipt-meta">
+      <div><dt class="cell-label">Order number</dt><dd>#{{ order.pk }}</dd></div>
+      <div><dt class="cell-label">Date</dt><dd>{{ order.created|date:"j M Y" }}</dd></div>
+      <div><dt class="cell-label">Order status</dt><dd>{{ order.status }}</dd></div>
+      <div><dt class="cell-label">Payment</dt><dd>{% if payment.method == 'COD' %}Cash on delivery, {{ payment.status|lower }}{% else %}{{ payment.status }}{% endif %}</dd></div>
+    </dl>
+    <div class="receipt-parties">
+      <section><h2 class="cell-label">Billed and delivered to</h2>
+        <address><strong>{{ order.name|default:customer }}</strong><br>{{ order.address|linebreaksbr }}<br>{{ order.phone|phone }}</address></section>
+      <section><h2 class="cell-label">Payment details</h2>
+        {% if payment.method == 'COD' %}<p>Method: Cash on delivery, pay on delivery<br>Status: {% if payment.status == 'Paid' %}Paid in cash{% elif order.status == 'Cancelled' %}Not due, order cancelled{% else %}Unpaid, ₹{{ order.total|floatformat:"2g" }} due in cash on delivery{% endif %}</p>
+        {% else %}<p>Method: {{ payment.method }}<br>Status: {{ payment.status }}<br>Reference: <span class="mono">{% if payment.reference %}{{ payment.reference }}{% else %}none{% endif %}</span></p>{% endif %}</section>
+    </div>
+    <table class="receipt-lines">
+      <thead><tr><th scope="col">Item</th><th scope="col" class="num">Unit price</th><th scope="col" class="num">Qty</th><th scope="col" class="num">Amount</th></tr></thead>
+      <tbody>{% for item, amount in lines %}<tr><td>{{ item.name }}</td><td class="num">₹{{ item.price|floatformat:"2g" }}</td><td class="num">{{ item.quantity }}</td><td class="num">₹{{ amount|floatformat:"2g" }}</td></tr>{% endfor %}</tbody>
+      <tfoot><tr><th scope="row" colspan="3">Total</th><td class="num">₹{{ order.total|floatformat:"2g" }}</td></tr></tfoot>
+    </table>
+    <footer class="receipt-foot">
+      <p>Amounts are in Indian rupees (₹) and list the order as recorded by Power Pick.{% if payment.method == 'Razorpay' %} Payments by Razorpay.{% endif %}</p>
+    </footer>
+  </article>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'store/account.js' %}" defer></script>{% endblock %}

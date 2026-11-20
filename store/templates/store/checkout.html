@@ -1,0 +1,100 @@
+{# Delivery details and payment choice; the server checks stock and price on submit. #}
+{% extends 'store/base.html' %}{% load static %}
+{% block title %}Checkout · Power Pick{% endblock %}
+{% block meta_description %}Confirm your delivery details, choose cash on delivery or online payment, and review your Power Pick order.{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'store/cart.css' %}"><link rel="stylesheet" href="{% static 'store/checkout.css' %}"><link rel="stylesheet" href="{% static 'store/address.css' %}">{% endblock %}
+{% block content %}
+<div class="wrap flow">
+  <header class="flow-head">
+    <div>
+      <h1>Checkout</h1>
+      <p class="muted">Tell us where to deliver, then choose how you want to pay.</p>
+    </div>
+    {% include 'store/_steps.html' with current=2 %}
+  </header>
+
+  <div class="checkout-grid">
+    <aside class="co-summary panel" aria-labelledby="co-summary-heading">
+      <h2 id="co-summary-heading">Order summary</h2>
+      <ul class="co-lines">
+        {% for line in lines %}
+        <li>
+          <span class="co-photo">{% if line.product.image %}<img src="{{ line.product.image.url }}" alt="" width="48" height="48" loading="lazy">{% else %}<svg class="i" aria-hidden="true"><use href="#i-parts"/></svg>{% endif %}</span>
+          <span class="co-name">{{ line.product.name }}<span class="muted xs">₹{{ line.product.price|floatformat:"2g" }} × {{ line.quantity }}</span></span>
+          <strong class="price">₹{{ line.subtotal|floatformat:"2g" }}</strong>
+        </li>
+        {% endfor %}
+      </ul>
+      <dl class="sum">
+        <div><dt>Subtotal ({{ item_count }} item{{ item_count|pluralize }})</dt><dd>₹{{ total|floatformat:"2g" }}</dd></div>
+        <div><dt>Delivery</dt><dd class="muted">Entered on this page</dd></div>
+      </dl>
+      <p class="sum-total"><span>Total</span><strong class="price">₹{{ total|floatformat:"2g" }}</strong></p>
+      <a class="btn btn--ghost btn--sm" href="{% url 'cart' %}"><svg class="i i--sm" aria-hidden="true"><use href="#i-edit"/></svg>Edit cart</a>
+    </aside>
+
+    <form class="co-form" method="post" action="{% url 'checkout' %}" aria-labelledby="co-delivery-heading">
+      {% csrf_token %}
+      <input type="hidden" name="token" value="{{ token }}">
+      <input type="hidden" name="expected_total" value="{{ total }}">
+
+      {% if changed_from is not None %}
+      <div class="notice notice--warn" role="alert" tabindex="-1" data-autofocus>
+        <svg class="i" aria-hidden="true"><use href="#i-alert"/></svg>
+        <div><b>Your total changed from ₹{{ changed_from|floatformat:"2g" }} to ₹{{ total|floatformat:"2g" }}.</b> A price or quantity was updated while this page was open. Check the summary, then continue if it looks right.</div>
+      </div>
+      {% elif form.errors %}
+      <div class="notice notice--fault" role="alert" tabindex="-1" data-autofocus>
+        <svg class="i" aria-hidden="true"><use href="#i-alert"/></svg>
+        <div><b>Fix {{ form.errors|length }} detail{{ form.errors|length|pluralize }} to continue.</b>
+          <ul class="co-errors">{% for field in form %}{% if field.errors %}<li><a href="#{{ field.id_for_label }}">{{ field.label }}</a>: {{ field.errors.0 }}</li>{% endif %}{% endfor %}</ul></div>
+      </div>
+      {% endif %}
+
+      <section class="co-section" aria-labelledby="co-delivery-heading">
+        <h2 id="co-delivery-heading">Delivery details</h2>
+        {% include 'store/_address_fields.html' %}
+        <label class="check">
+          <input type="checkbox" name="save_details" value="1"{% if save_details %} checked{% endif %}>
+          <span>Save these details to my profile<span class="hint">They will fill this form next time. You can change them in your profile.</span></span>
+        </label>
+      </section>
+
+      <section class="co-section" aria-labelledby="co-pay-heading">
+        <h2 id="co-pay-heading">Payment method</h2>
+        <div class="pay-options" role="radiogroup" aria-labelledby="co-pay-heading">
+          <label class="pay-option">
+            <input type="radio" name="method" value="Razorpay" data-method{% if method != 'COD' %} checked{% endif %}>
+            <span class="pay-method">
+              <span class="pay-method-icon"><svg class="i" aria-hidden="true"><use href="#i-card"/></svg></span>
+              <span class="pay-method-body">
+                <strong>Pay online with Razorpay</strong>
+                <span>UPI, cards, netbanking or wallets, in Razorpay's secure window on the next page.</span>
+              </span>
+              <span class="pay-method-check" aria-hidden="true"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>
+            </span>
+          </label>
+          <label class="pay-option">
+            <input type="radio" name="method" value="COD" data-method{% if method == 'COD' %} checked{% endif %}>
+            <span class="pay-method">
+              <span class="pay-method-icon"><svg class="i" aria-hidden="true"><use href="#i-cash"/></svg></span>
+              <span class="pay-method-body">
+                <strong>Cash on delivery</strong>
+                <span>Pay in cash when the order arrives. Your order is confirmed right away and nothing is charged now.</span>
+              </span>
+              <span class="pay-method-check" aria-hidden="true"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>
+            </span>
+          </label>
+        </div>
+        <div data-pay-online{% if method == 'COD' %} hidden{% endif %}>{% include 'store/_pay_strip.html' %}</div>
+      </section>
+
+      <div class="co-submit">
+        <button type="submit" class="btn btn--lg btn--block" data-busy><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg><span data-submit-label>{% if method == 'COD' %}Place order, pay ₹{{ total|floatformat:"2g" }} on delivery{% else %}Review and pay ₹{{ total|floatformat:"2g" }}{% endif %}</span></button>
+        <p class="muted xs" data-submit-note>Prices and stock are checked again when you continue.{% if method == 'COD' %} Your order is confirmed straight away.{% else %} You review the order on the next page before you pay.{% endif %}</p>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'store/checkout.js' %}" defer></script>{% endblock %}

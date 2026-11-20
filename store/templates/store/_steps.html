@@ -1,0 +1,15 @@
+{# Three-step checkout circuit. Usage: {% include 'store/_steps.html' with current=2 %} (1 Cart, 2 Delivery, 3 Payment) #}
+<ol class="steps" aria-label="Checkout progress">
+  <li class="{% if current > 1 %}is-done{% else %}is-current{% endif %}"{% if current == 1 %} aria-current="step"{% endif %}>
+    <span class="steps-dot">{% if current > 1 %}<svg class="i i--sm" aria-hidden="true"><use href="#i-check"/></svg>{% else %}<svg class="i i--sm" aria-hidden="true"><use href="#i-cart"/></svg>{% endif %}</span>
+    <span class="steps-label">{% if current == 2 %}<a href="{% url 'cart' %}">Cart</a>{% else %}Cart{% endif %}<span class="sr-only">{% if current > 1 %}, done{% else %}, current step{% endif %}</span></span>
+  </li>
+  <li class="{% if current > 2 %}is-done{% elif current == 2 %}is-current{% endif %}"{% if current == 2 %} aria-current="step"{% endif %}>
+    <span class="steps-dot">{% if current > 2 %}<svg class="i i--sm" aria-hidden="true"><use href="#i-check"/></svg>{% else %}<svg class="i i--sm" aria-hidden="true"><use href="#i-truck"/></svg>{% endif %}</span>
+    <span class="steps-label">Delivery<span class="sr-only">{% if current > 2 %}, done{% elif current == 2 %}, current step{% else %}, next{% endif %}</span></span>
+  </li>
+  <li class="{% if current == 3 %}is-current{% endif %}"{% if current == 3 %} aria-current="step"{% endif %}>
+    <span class="steps-dot"><svg class="i i--sm" aria-hidden="true"><use href="#i-card"/></svg></span>
+    <span class="steps-label">Payment<span class="sr-only">{% if current == 3 %}, current step{% else %}, next{% endif %}</span></span>
+  </li>
+</ol>

@@ -1,0 +1,18 @@
+{# Sign-in form and return link for customers and staff. #}
+{% extends "store/_auth_shell.html" %}
+{% block title %}Sign in · Power Pick{% endblock %}
+{% block meta_description %}Sign in to Power Pick to track orders, reuse saved delivery details and manage your wishlist.{% endblock %}
+{% block form_side %}
+<h1 id="auth-title">Sign in</h1>
+<p class="lede">{% if next == '/checkout/' %}Sign in to continue to checkout with your delivery details.{% else %}Use your Power Pick username and password.{% endif %}</p>
+{% include 'store/_account_errors.html' with form=form title="Sign-in did not work." %}
+<form method="post" class="auth-fields" novalidate>
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ next }}">
+  {% include 'store/_account_field.html' with field=form.username %}
+  {% include 'store/_account_field.html' with field=form.password password=True %}
+  <button type="submit" class="btn btn--lg btn--block" data-busy>Sign in{% if next == '/checkout/' %} and continue{% endif %}</button>
+</form>
+<p class="auth-alt">New to Power Pick? <a href="{% url 'register' %}">Create an account</a></p>
+<p class="auth-quiet"><svg class="i i--sm" aria-hidden="true"><use href="#i-shield"/></svg><span>Staff sign in with the same form; you are taken to the workspace. Locked out? <a href="{% url 'page' 'contact' %}">Contact the shop</a>.</span></p>
+{% endblock %}

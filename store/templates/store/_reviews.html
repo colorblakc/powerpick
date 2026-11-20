@@ -1,0 +1,77 @@
+{# Reviews: summary, eligibility, form, list. Context comes from the detail view. #}
+<section class="pd-reviews" id="reviews" aria-labelledby="rev-h">
+  <h2 id="rev-h">Reviews</h2>
+  <div class="rev-grid">
+    {% if summary.count %}<div class="rev-summary">
+      {% if summary.count %}
+      <p class="rev-avg"><strong>{{ summary.average }}</strong> out of 5
+        <span class="stars" role="img" aria-label="Rated {{ summary.average }} out of 5">{% for n in stars %}<svg class="i{% if n <= summary.rounded %} on{% endif %}" aria-hidden="true"><use href="#i-star"/></svg>{% endfor %}</span>
+        <span class="muted">{{ summary.count }} review{{ summary.count|pluralize }}</span></p>
+      <ul class="dist" aria-label="Reviews by star rating">
+        {% for bar in summary.bars %}<li><span class="dist-star">{{ bar.star }} star{{ bar.star|pluralize }}</span><span class="dist-bar" aria-hidden="true"><i style="--pct: {{ bar.percent }}%"></i></span><span class="dist-n">{{ bar.count }}<span class="sr-only"> review{{ bar.count|pluralize }}</span></span></li>{% endfor %}
+      </ul>
+      {% else %}
+      {% endif %}
+    </div>{% endif %}
+
+    <div class="rev-action">
+      {% if user.is_authenticated %}
+        {% if user.is_staff %}
+        <p class="notice"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg><span>Staff accounts cannot review products.</span></p>
+        {% elif own_review %}
+        <p class="notice notice--ok"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span>You have reviewed this product. You can delete your review from the list below.</span></p>
+        {% elif can_review %}
+        <form class="rev-form" method="post" action="{% url 'add_review' product.pk %}" novalidate aria-labelledby="rev-form-h" {% if review_form.errors %}data-has-errors{% endif %}>
+          {% csrf_token %}
+          <h3 id="rev-form-h">Write a review</h3>
+          {% if review_form.errors %}<p class="notice notice--fault" role="alert" id="rev-errors"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg><span>Your review was not posted. Fix the {{ review_form.errors|length }} item{{ review_form.errors|length|pluralize }} marked below and try again.</span></p>{% endif %}
+          <fieldset class="rate{% if review_form.rating.errors %} has-error{% endif %}">
+            <legend class="field-label">Your rating</legend>
+            <div class="rate-row">
+              {% for value, label in review_form.fields.rating.choices %}
+              <input type="radio" name="rating" id="rate-{{ value }}" value="{{ value }}" {% if review_form.rating.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %} {% if forloop.first %}required{% endif %}>
+              <label for="rate-{{ value }}" title="{{ value }} star{{ value|pluralize }}"><svg class="i" aria-hidden="true"><use href="#i-star"/></svg><span class="sr-only">{{ value }} star{{ value|pluralize }}</span></label>
+              {% endfor %}
+            </div>
+            {{ review_form.rating.errors }}
+          </fieldset>
+          <div class="field{% if review_form.title.errors %} has-error{% endif %}"><label for="rev-title">Headline <span class="muted">(optional)</span></label>
+            <input id="rev-title" name="title" maxlength="80" value="{{ review_form.title.value|default:'' }}" autocomplete="off"{% if review_form.title.errors %} aria-invalid="true"{% endif %}>{{ review_form.title.errors }}</div>
+          <div class="field{% if review_form.body.errors %} has-error{% endif %}"><label for="rev-body">Your review</label>
+            <textarea id="rev-body" name="body" rows="5" minlength="10" maxlength="1000" required aria-describedby="rev-body-hint"{% if review_form.body.errors %} aria-invalid="true"{% endif %}>{{ review_form.body.value|default:'' }}</textarea>
+            {{ review_form.body.errors }}
+            <span class="hint" id="rev-body-hint">10 to 1000 characters. <span data-count aria-live="off"></span></span></div>
+          <p class="hint">Your first name and last initial are shown with your review. You can delete it later, but not edit it.</p>
+          <button class="btn" type="submit" data-busy>Post review</button>
+        </form>
+        {% else %}
+        <p class="notice notice--blue"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg><span>Only customers who have bought this product can review it. You can review it once an order containing it is paid and confirmed, or delivered.</span></p>
+        {% endif %}
+      {% else %}
+      <p class="notice notice--blue"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg><span><a href="{% url 'login' %}?next={% url 'detail' product.pk %}%23reviews">Sign in</a> to review this product. Only customers with a paid order containing it can post a review.</span></p>
+      {% endif %}
+    </div>
+
+    <div class="rev-list">
+      {% if reviews %}
+      <ul class="revs">
+        {% for r in reviews %}
+        <li class="rev{% if r.user_id == user.pk %} is-mine{% endif %}">
+          <div class="rev-top"><span class="stars" role="img" aria-label="{{ r.rating }} out of 5">{% for n in stars %}<svg class="i{% if n <= r.rating %} on{% endif %}" aria-hidden="true"><use href="#i-star"/></svg>{% endfor %}</span>
+            {% if r.title %}<h3>{{ r.title }}</h3>{% endif %}</div>
+          <p class="rev-body">{{ r.body|linebreaksbr }}</p>
+          <div class="rev-meta"><span>{% if r.user_id == user.pk %}You{% else %}{{ r.name }}{% endif %}</span><span aria-hidden="true">/</span><time datetime="{{ r.created|date:'Y-m-d' }}">{{ r.created|date:"j M Y" }}</time><span aria-hidden="true">/</span>{% if variant_count > 1 and r.product.variant_label %}<span>Option <span class="mono">{{ r.product.variant_label }}</span></span><span aria-hidden="true">/</span>{% endif %}<span>Bought on Power Pick</span>
+            {% if r.user_id == user.pk %}
+            <form method="post" action="{% url 'delete_review' product.pk %}" data-confirm="Delete your review? You can write a new one afterwards."> {% csrf_token %}<button class="link-btn" type="submit"><svg class="i i--sm" aria-hidden="true"><use href="#i-trash"/></svg> Delete my review</button></form>
+            {% endif %}
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% if summary.count > reviews|length %}<p class="muted small rev-cap">Showing the {{ reviews|length }} most recent of {{ summary.count }} reviews.</p>{% endif %}
+      {% else %}
+      <div class="empty rev-empty"><svg class="i" aria-hidden="true"><use href="#i-star"/></svg><h3>No reviews yet</h3><p>Reviews from customers who bought this product will appear here.</p></div>
+      {% endif %}
+    </div>
+  </div>
+</section>

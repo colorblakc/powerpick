@@ -1,0 +1,78 @@
+/* Product card, Afterglow: a soft tinted tile. The photo melts into a lavender wash, the price leads, one round action. */
+.card { --card-r: 24px; position: relative; display: flex; flex-direction: column; min-width: 0; background: var(--paper); border-radius: var(--card-r); box-shadow: 0 1px 2px rgb(13 11 46 / .04); transition: transform var(--med) var(--ease), box-shadow var(--med) var(--ease); }
+.card:hover { transform: translateY(-4px); box-shadow: 0 2px 4px rgb(13 11 46 / .04), 0 22px 40px -22px rgb(61 36 190 / .38); }
+.card-photo { position: relative; aspect-ratio: 4 / 3; margin: .5rem .5rem 0; background: radial-gradient(120% 90% at 50% 100%, #E4DEFF 0%, var(--blue-wash) 55%, #F4F1FF 100%); border-radius: calc(var(--card-r) - 6px); overflow: hidden; }
+.card-photo img { display: block; width: 100%; height: 100%; object-fit: contain; padding: 6%; filter: drop-shadow(0 12px 10px rgb(61 36 190 / .22)); transition: transform .6s var(--ease); }
+.card:hover .card-photo img { transform: scale(1.05); }
+.card-noimg { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: var(--s2); padding: var(--s4); text-align: center; color: var(--ink-3); font-size: var(--t-xs); font-weight: 600; }
+
+.card-body { flex: 1; display: flex; flex-direction: column; gap: .3rem; padding: var(--s4) var(--s4) var(--s4); min-width: 0; }
+.card-brand { font-size: var(--t-xs); font-weight: 600; line-height: 1.2; color: var(--ink-3); }
+.card-title { font: 600 var(--t-base)/1.3 var(--f-body); letter-spacing: -.005em; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card-link { color: var(--ink); text-decoration: none; }
+.card-link::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: var(--card-r); }
+.card:hover .card-link { color: var(--blue-deep); }
+.card-link:focus-visible { outline: none; }
+.card-link:focus-visible::after { outline: 3px solid var(--blue); outline-offset: 2px; }
+.card-spec { font-size: var(--t-xs); line-height: 1.4; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card-rating { font-size: var(--t-xs); color: var(--ink-3); }
+.card-rating b { font-weight: 700; color: var(--ink); margin-left: .2rem; }
+.card-rating .i { color: var(--blue); fill: currentColor; stroke: currentColor; vertical-align: -.12em; }
+.card-stock { min-height: 1.4rem; display: flex; align-items: center; margin-top: .15rem; }
+.card-stock .stock { min-width: 0; }
+
+.card-foot { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--s2); margin-top: auto; padding-top: var(--s3); }
+.card-buy { display: grid; gap: .1rem; min-width: 0; }
+.card-price { font-size: clamp(1.15rem, 1.05rem + .5vw, 1.5rem); line-height: 1.05; letter-spacing: -.02em; white-space: nowrap; }
+.card-price small { display: block; margin: 0 0 .15rem; }
+.card-options { font-size: var(--t-xs); color: var(--ink-3); }
+.card-add { position: relative; z-index: 2; margin: 0; flex: none; }
+.card-act { position: relative; z-index: 2; flex: none; display: grid; place-items: center; width: 2.75rem; height: 2.75rem; padding: 0; border: 0; border-radius: 50%; background: var(--blue); color: #fff; cursor: pointer; text-decoration: none; transition: background var(--fast), transform var(--med) var(--ease); }
+.card-act:hover { background: var(--blue-deep); color: #fff; transform: scale(1.06); }
+.card-act:active { transform: scale(.94); }
+.card-act:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+.card-act .i { width: 1.25rem; height: 1.25rem; stroke-width: 2.2; }
+a.card-act { background: var(--ink); }
+a.card-act:hover { background: var(--blue); }
+.card-act[disabled] { background: var(--wash); color: #726B8C; cursor: not-allowed; transform: none; }
+
+.wish-form { position: absolute; top: 1rem; right: 1rem; z-index: 3; margin: 0; }
+.wish-btn { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; padding: 0; background: rgb(255 255 255 / .82); border: 0; border-radius: 50%; color: var(--ink-2); cursor: pointer; transition: color var(--fast), background var(--fast), transform var(--med) var(--ease); }
+.wish-btn::before { content: ""; position: absolute; inset: -2px; border-radius: 50%; }
+.wish-btn:hover { color: var(--blue); background: #fff; }
+.wish-btn:active { transform: scale(.9); }
+.wish-btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.wish-btn[aria-pressed="true"] { color: var(--blue); background: #fff; }
+.wish-btn[aria-pressed="true"] .i { fill: currentColor; }
+.wish-btn.is-loading { opacity: .6; pointer-events: none; }
+
+/* Wide lead card: photo beside the copy, spans two columns where the grid has room. */
+@media (min-width: 960px) {
+  .card--lead { grid-column: span 2; flex-direction: row; }
+  .card--lead .card-photo { flex: 1.25 1 0; aspect-ratio: auto; align-self: stretch; min-height: 18rem; margin: .5rem 0 .5rem .5rem; }
+  .card--lead .card-photo img { position: absolute; inset: 0; }
+  .card--lead .card-body { flex: 1 1 0; padding: var(--s6) var(--s5) var(--s5); gap: .45rem; }
+  .card--lead .card-title { font: 700 var(--t-lg)/1.15 var(--f-display); letter-spacing: -.02em; -webkit-line-clamp: 3; }
+  .card--lead .card-price { font-size: 2rem; }
+  .card--lead .card-act { width: 3.25rem; height: 3.25rem; }
+  .card--lead .wish-form { right: auto; left: 1.1rem; }
+}
+
+@media (max-width: 520px) {
+  .card { --card-r: 20px; }
+  .card-photo { margin: .375rem .375rem 0; }
+  .card-body { padding: var(--s3); }
+  .card-title { font-size: var(--t-sm); }
+  .card-foot { gap: var(--s1); }
+  .card-act { width: 2.5rem; height: 2.5rem; }
+  .wish-form { top: .7rem; right: .7rem; }
+  .wish-btn { width: 2.25rem; height: 2.25rem; }
+  .wish-btn::before { inset: -4px; }
+  .card-stock .stock { font-size: .75rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card, .card-photo img, .card-act, .wish-btn { transition: none; }
+  .card:hover { transform: none; }
+  .card:hover .card-photo img { transform: none; }
+}
+.card-act--out { width: auto; height: 2.25rem; padding: 0 .8rem; border-radius: 999px; font: 600 .75rem/1 var(--f-body); white-space: nowrap; }

@@ -1,0 +1,56 @@
+/* Sign in and registration: a midnight brand panel with a glowing circuit, beside the form. */
+.auth-wrap { padding-block: var(--s7) var(--s7); }
+.auth-sheet { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; background: var(--paper); box-shadow: var(--lift); }
+
+/* Brand panel */
+.auth-ink { position: relative; display: flex; flex-direction: column; padding: var(--s6); color: var(--on-ink-2); isolation: isolate;
+  background:
+    radial-gradient(70% 55% at 0% 0%, color-mix(in srgb, var(--blue) 42%, transparent), transparent 70%),
+    radial-gradient(55% 45% at 100% 100%, color-mix(in srgb, var(--live) 16%, transparent), transparent 70%),
+    var(--ink); }
+.auth-logo { align-self: flex-start; margin-bottom: var(--s7); }
+.auth-ink h2 { color: var(--on-ink); font-size: var(--t-xl); max-width: 18ch; margin-bottom: var(--s5); }
+.circuit { display: block; width: 100%; max-width: 30rem; height: auto; margin-bottom: var(--s6); overflow: visible; }
+.circuit path, .circuit rect, .circuit circle { vector-effect: non-scaling-stroke; }
+.circuit .base { fill: none; stroke: var(--ink-line); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.circuit .run { fill: none; stroke: var(--live); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 0;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--live) 60%, transparent)); animation: energise 2.2s var(--ease) .25s both; }
+.circuit .n { fill: var(--ink); stroke: var(--live); stroke-width: 2; animation: node-on .5s var(--ease) calc(.25s + var(--at, 0s)) both; }
+.circuit .sw { fill: none; stroke-linecap: round; }
+.circuit .lamp { fill: var(--live); animation-name: lamp-on; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--live) 70%, transparent)); }
+.circuit .lamp-x { stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
+@keyframes energise { from { stroke-dashoffset: 1; } }
+@keyframes node-on { from { stroke: var(--ink-line); } }
+@keyframes lamp-on { from { stroke: var(--ink-line); fill: var(--ink); } }
+.reasons { list-style: none; display: grid; margin: auto 0 0; padding: 0; border-top: 1px solid var(--ink-line); }
+.reasons li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--s4); align-items: start; padding-block: var(--s4); border-bottom: 1px solid var(--ink-line); }
+.reasons li:last-child { border-bottom: 0; padding-bottom: 0; }
+.reasons strong { display: block; color: var(--on-ink); font-weight: 600; margin-bottom: .15rem; }
+.reasons span:not(.rnode) { font-size: var(--t-sm); line-height: 1.5; display: block; }
+.rnode { display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 50%; border: 1px solid var(--ink-line); background: color-mix(in srgb, var(--blue) 22%, var(--ink)); color: var(--on-ink); }
+
+/* Form side */
+.auth-form { padding: var(--s7) var(--s6); display: grid; align-content: center; }
+.auth-form > * { max-width: 26rem; width: 100%; margin-inline: auto; }
+.auth-form h1 { font-size: var(--t-2xl); margin-bottom: var(--s2); }
+.auth-form .lede { color: var(--ink-3); margin-bottom: var(--s5); }
+.auth-alt { margin-top: var(--s5); padding-top: var(--s4); border-top: 1px solid var(--line); font-weight: 500; }
+.auth-quiet { display: flex; gap: var(--s2); align-items: flex-start; margin-top: var(--s3); font-size: var(--t-xs); color: var(--ink-3); }
+.auth-quiet .i { margin-top: .15em; flex: none; }
+
+@media (max-width: 900px) {
+  .auth-wrap { padding-block: var(--s5); }
+  .auth-sheet { grid-template-columns: minmax(0, 1fr); }
+  .auth-form { order: -1; padding: var(--s6) var(--s5); }
+  .auth-ink { padding: var(--s5); }
+  .auth-logo { margin-bottom: var(--s5); }
+  .auth-ink h2 { max-width: none; }
+  .reasons { margin-top: 0; }
+}
+@media (max-width: 560px) {
+  .auth-wrap { padding-inline: 0; }
+  .auth-sheet { border-inline: 0; border-radius: 0; box-shadow: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .circuit .run, .circuit .n { animation: none !important; }
+}

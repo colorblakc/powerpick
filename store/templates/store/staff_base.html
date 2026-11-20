@@ -1,0 +1,67 @@
+{# Shared staff workspace shell and navigation. #}
+{% extends 'store/base.html' %}{% load static %}
+{% block title %}{% block staff_title %}Workspace{% endblock %} · Power Pick staff{% endblock %}
+{% block meta_description %}Power Pick staff workspace: products, stock, orders, payments and customers.{% endblock %}
+{% block styles %}<script>document.documentElement.classList.add("js")</script>
+<link rel="stylesheet" href="{% static 'store/staff.css' %}">{% endblock %}
+{% block body_class %}staff-body{% endblock %}
+
+{% block chrome_top %}
+<div class="staff-scrim" data-staff-scrim hidden></div>
+<aside class="staff-rail" id="staff-rail" aria-label="Staff workspace">
+  <div class="rail-head">
+    <a class="logo" href="{% url 'dashboard' %}" aria-label="Power Pick staff workspace home">
+      <img class="logo-img" src="{% static 'store/brand/lockup-on-dark.webp' %}" alt="Power Pick" width="96" height="44"><span class="logo-sub">Staff workspace</span>
+    </a>
+    <button type="button" class="icon-btn rail-close" data-staff-close aria-label="Close menu"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button>
+  </div>
+  <nav class="rail-nav" aria-label="Workspace sections">
+    <ol class="rail-line">
+      <li><a href="{% url 'dashboard' %}"{% if section == 'overview' %} aria-current="page"{% endif %}><span class="node"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg></span>Overview</a></li>
+      <li><a href="{% url 'staff_products' %}"{% if section == 'products' %} aria-current="page"{% endif %}><span class="node"><svg class="i" aria-hidden="true"><use href="#i-box-open"/></svg></span>Products</a></li>
+      <li><a href="{% url 'staff_inventory' %}"{% if section == 'inventory' %} aria-current="page"{% endif %}><span class="node"><svg class="i" aria-hidden="true"><use href="#i-package"/></svg></span>Inventory{% if attention.low %}<b class="rail-count" aria-label="{{ attention.low }} low or out of stock">{{ attention.low }}</b>{% endif %}</a></li>
+      <li><a href="{% url 'staff_categories' %}"{% if section == 'categories' %} aria-current="page"{% endif %}><span class="node"><svg class="i" aria-hidden="true"><use href="#i-tag"/></svg></span>Categories</a></li>
+      <li><a href="{% url 'sales' %}"{% if section == 'orders' %} aria-current="page"{% endif %}><span class="node"><svg class="i" aria-hidden="true"><use href="#i-receipt"/></svg></span>Orders{% if attention.orders %}<b class="rail-count" aria-label="{{ attention.orders }} need action">{{ attention.orders }}</b>{% endif %}</a></li>
+      <li><a href="{% url 'staff_payments' %}"{% if section == 'payments' %} aria-current="page"{% endif %}><span class="node"><svg class="i" aria-hidden="true"><use href="#i-card"/></svg></span>Payments</a></li>
+      <li><a href="{% url 'staff_customers' %}"{% if section == 'customers' %} aria-current="page"{% endif %}><span class="node"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg></span>Customers</a></li>
+      <li><a href="{% url 'staff_faqs' %}"{% if section == 'faqs' %} aria-current="page"{% endif %}><span class="node"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg></span>Assistant FAQs</a></li>
+      <li><a href="{% url 'staff_me' %}"{% if section == 'me' %} aria-current="page"{% endif %}><span class="node"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg></span>My profile</a></li>
+    </ol>
+  </nav>
+  <ul class="rail-foot">
+    <li><a href="{% url 'home' %}"><svg class="i" aria-hidden="true"><use href="#i-arrow-left"/></svg>View store</a></li>
+    <li><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit"><svg class="i" aria-hidden="true"><use href="#i-logout"/></svg>Sign out</button></form></li>
+  </ul>
+</aside>
+<header class="staff-top">
+  <button type="button" class="icon-btn staff-menu" data-staff-open aria-expanded="false" aria-controls="staff-rail" aria-label="Open menu"><svg class="i" aria-hidden="true"><use href="#i-menu"/></svg></button>
+  <form class="staff-find" action="{% url 'sales' %}" role="search">
+    <svg class="i" aria-hidden="true"><use href="#i-search"/></svg>
+    <input type="search" name="q" aria-label="Find an order" placeholder="Find an order by number or customer" autocomplete="off">
+  </form>
+  <div class="staff-top-end">
+    {% if user.profile.avatar_filename %}<a href="{% url 'staff_me' %}" aria-label="My profile"><img class="mast-avatar" src="{% static user.profile.avatar_filename %}" alt="" width="32" height="32"></a>{% endif %}
+    <div class="staff-user"><b>{{ user.get_full_name|default:user.username }}</b><span>{% if user.is_superuser %}Administrator{% else %}Staff{% endif %}</span></div>
+  </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="staff-page">
+  <header class="page-head">
+    <div>
+      {% block back %}{% endblock %}
+      <h1>{% block heading %}{% endblock %}</h1>
+      {% block sub %}{% endblock %}
+    </div>
+    <div class="page-actions">{% block actions %}{% endblock %}</div>
+  </header>
+  {% block staff_content %}{% endblock %}
+</div>
+{% endblock %}
+
+{% block chrome_bottom %}
+<footer class="staff-foot"><span>Power Pick staff workspace</span><span>Signed in as {{ user.username }}. Amounts are in Indian rupees (₹).</span></footer>
+{% endblock %}
+
+{% block scripts %}<script src="{% static 'store/staff.js' %}" defer></script>{% endblock %}

@@ -1,0 +1,50 @@
+{# Staff forms for the answers used by the assistant. #}
+{% extends 'store/staff_base.html' %}{% load static %}
+{% block staff_title %}Assistant FAQs{% endblock %}
+{% block heading %}Assistant FAQs{% endblock %}
+{% block sub %}<p>{{ total }} answer{{ total|pluralize }} in {{ category_count }} categor{{ category_count|pluralize:"y,ies" }}. The shop assistant answers from these entries.</p>{% endblock %}
+{% block actions %}<a class="btn btn--ghost btn--sm" href="{% url 'home' %}"><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg>Open the shop</a>{% endblock %}
+
+{% block staff_content %}
+<p class="note"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg><span>To try the assistant, open the <a href="{% url 'home' %}">shop</a> and use the “Ask Power Pick” button at the bottom right. Changes saved here apply to the next question.</span></p>
+
+<details class="faq-add"{% if new.errors %} open{% endif %}>
+  <summary><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Add an answer</summary>
+  <form method="post" action="{% url 'staff_faqs' %}" novalidate>{% csrf_token %}
+    {% include 'store/_staff_field.html' with field=new.category hint="Choose an existing category or type a new one." %}
+    {% include 'store/_staff_field.html' with field=new.question hint="Write it as a customer would ask it." %}
+    {% include 'store/_staff_field.html' with field=new.answer %}
+    <div class="form-actions"><button class="btn" type="submit" data-busy>Add answer</button></div>
+  </form>
+</details>
+<datalist id="faq-categories">{% for name in category_names %}<option value="{{ name }}">{% endfor %}</datalist>
+
+<form class="filters" method="get" role="search" aria-label="Search assistant answers">
+  <div class="f f--grow"><label for="f-q">Search questions and answers</label><input id="f-q" type="search" name="q" value="{{ query }}" autocomplete="off"></div>
+  <div class="filters-end"><button class="btn btn--sm" type="submit">Search</button>{% if query %}<a class="btn btn--ghost btn--sm" href="{% url 'staff_faqs' %}">Clear</a>{% endif %}</div>
+</form>
+{% if query %}<div class="result-line"><span>{{ shown }} of {{ total }} entries match</span></div>{% endif %}
+
+{% for category, rows in groups.items %}
+<section class="faq-group" aria-labelledby="g{{ forloop.counter }}">
+  <h2 id="g{{ forloop.counter }}">{{ category }} <span>{{ rows|length }}</span></h2>
+  <div class="faq-list">
+    {% for entry, form in rows %}
+    <details class="faq" id="faq-{{ entry.pk }}"{% if open_pk == entry.pk or form.errors %} open{% endif %}>
+      <summary><svg class="i i--sm" aria-hidden="true"><use href="#i-chevron-right"/></svg><span>{{ entry.question }}</span></summary>
+      <form class="faq-body" method="post" action="{% url 'staff_faq_edit' entry.pk %}" novalidate>{% csrf_token %}
+        {% include 'store/_staff_field.html' with field=form.category %}
+        {% include 'store/_staff_field.html' with field=form.question %}
+        {% include 'store/_staff_field.html' with field=form.answer %}
+        <div class="form-actions"><button class="btn btn--sm" type="submit" data-busy>Save changes</button>
+          <button class="btn btn--danger btn--sm" type="submit" form="faq-del-{{ entry.pk }}">Delete</button></div>
+      </form>
+      <form id="faq-del-{{ entry.pk }}" method="post" action="{% url 'staff_faq_delete' entry.pk %}" data-confirm="Delete this answer? The assistant will stop using it.">{% csrf_token %}</form>
+    </details>
+    {% endfor %}
+  </div>
+</section>
+{% empty %}
+<div class="empty"><img class="empty-mark" src="{% static 'store/brand/head-dark.png' %}" alt="" width="56" height="57" loading="lazy"><h2>{% if query %}No entries match “{{ query }}”{% else %}No answers yet{% endif %}</h2><p>{% if query %}Try fewer words, or add a new answer.{% else %}Add the first answer above.{% endif %}</p></div>
+{% endfor %}
+{% endblock %}

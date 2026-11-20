@@ -1,0 +1,44 @@
+{# Staff order list and fulfilment filters. #}
+{% extends 'store/staff_base.html' %}{% load static %}
+{% block staff_title %}Orders{% endblock %}
+{% block heading %}Orders{% endblock %}
+{% block sub %}<p>Open an order to see items, delivery details and payment, and to move it along.</p>{% endblock %}
+{% block actions %}<a class="btn btn--ghost btn--sm" href="{% url 'staff_payments' %}"><svg class="i" aria-hidden="true"><use href="#i-card"/></svg>Payments</a>{% endblock %}
+
+{% block staff_content %}
+<ul class="chips" aria-label="Filter by order status">
+  {% for chip in chips %}<li><a class="chip" href="{{ chip.url }}"{% if chip.active %} aria-current="true"{% endif %}>{{ chip.label }}<b>{{ chip.count }}</b></a></li>{% endfor %}
+</ul>
+<form class="filters" method="get" role="search" aria-label="Search orders">
+  {% if request.GET.status %}<input type="hidden" name="status" value="{{ request.GET.status }}">{% endif %}
+  <div class="f f--grow"><label for="f-q">Order number or customer</label><input id="f-q" type="search" name="q" value="{{ request.GET.q }}" placeholder="For example 24 or asha" autocomplete="off"></div>
+  <div class="f"><label for="f-pay">Payment</label><select id="f-pay" name="payment"><option value="">Any payment</option>{% for s in payment_statuses %}<option value="{{ s }}"{% if request.GET.payment == s %} selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+  <div class="f f--date"><label for="f-from">Placed from</label><input id="f-from" type="date" name="from" value="{{ request.GET.from }}"></div>
+  <div class="f f--date"><label for="f-to">Placed to</label><input id="f-to" type="date" name="to" value="{{ request.GET.to }}"></div>
+  <div class="filters-end"><button class="btn btn--sm" type="submit">Apply</button>{% if request.GET.q or request.GET.payment or request.GET.from or request.GET.to or request.GET.status %}<a class="btn btn--ghost btn--sm" href="{% url 'sales' %}">Clear</a>{% endif %}</div>
+</form>
+
+<div class="result-line"><span>{{ page.paginator.count }} order{{ page.paginator.count|pluralize }}</span></div>
+{% if page %}
+<div class="tbl-wrap"><table class="tbl tbl--dense tbl--stack">
+  <thead><tr><th scope="col">Order</th><th scope="col">Placed</th><th scope="col">Customer</th><th scope="col" class="num">Items</th><th scope="col" class="num">Total</th><th scope="col">Payment</th><th scope="col">Status</th><th scope="col"><span class="sr-only">Open</span></th></tr></thead>
+  <tbody>
+  {% for order in page %}
+    <tr>
+      <td data-label="Order"><a class="name" href="{% url 'sale' order.pk %}">#{{ order.pk }}</a></td>
+      <td data-label="Placed" class="nowrap">{{ order.created|date:"j M Y, H:i" }}</td>
+      <td data-label="Customer"><a class="name" href="{% url 'staff_customer' order.user_id %}">{{ order.user.get_full_name|default:order.user.username }}</a>{% if order.user.get_full_name %}<span class="sub">{{ order.user.username }}</span>{% endif %}</td>
+      <td data-label="Items" class="num">{{ order.item_count }}</td>
+      <td data-label="Total" class="num">₹{{ order.total|floatformat:"2g" }}</td>
+      <td data-label="Payment">{% include 'store/_staff_status.html' with status=order.payment.status %}</td>
+      <td data-label="Status">{% include 'store/_staff_status.html' with status=order.status %}</td>
+      <td class="actions"><a class="btn btn--ghost btn--sm" href="{% url 'sale' order.pk %}">Open<span class="sr-only"> order {{ order.pk }}</span></a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% include 'store/_staff_pager.html' %}
+{% else %}
+<div class="empty"><img class="empty-mark" src="{% static 'store/brand/head-dark.png' %}" alt="" width="56" height="57" loading="lazy"><h2>No orders match</h2><p>{% if request.GET %}Change the filters or search for a different order number or customer.{% else %}Orders appear here as soon as a customer checks out.{% endif %}</p>{% if request.GET %}<a class="btn btn--ghost" href="{% url 'sales' %}">Clear filters</a>{% endif %}</div>
+{% endif %}
+{% endblock %}

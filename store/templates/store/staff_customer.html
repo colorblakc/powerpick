@@ -1,0 +1,62 @@
+{# One customer’s contact details, delivery address and order history. #}
+{% extends 'store/staff_base.html' %}{% load static %}
+{% block styles %}{{ block.super }}<link rel="stylesheet" href="{% static 'store/address.css' %}">{% endblock %}
+{% block staff_title %}{{ person.get_full_name|default:person.username }}{% endblock %}
+{% block back %}<a class="back-link" href="{% url 'staff_customers' %}"><svg class="i i--sm" aria-hidden="true"><use href="#i-arrow-left"/></svg>All customers</a>{% endblock %}
+{% block heading %}{{ person.get_full_name|default:person.username }} {% if person.is_active %}<span class="tag tag--ok">Active</span>{% else %}<span class="tag tag--fault">Deactivated</span>{% endif %}{% endblock %}
+{% block sub %}<p>Signed in as <span class="mono">{{ person.username }}</span>. Joined {{ person.date_joined|date:"j F Y" }}.</p>{% endblock %}
+
+{% block staff_content %}
+<div class="split">
+  <div>
+    <form method="post" novalidate>{% csrf_token %}
+      {% if form.errors or delivery.errors %}<div class="notice notice--fault form-error-summary" role="alert"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg><div><b>Changes were not saved.</b> Fix the fields marked below and save again.</div></div>{% endif %}
+      <section class="panel" aria-labelledby="c-prof">
+        <h2 id="c-prof">Profile</h2>
+        <div class="field-pair">
+          {% include 'store/_staff_field.html' with field=form.first_name %}
+          {% include 'store/_staff_field.html' with field=form.last_name %}
+        </div>
+        {% include 'store/_staff_field.html' with field=form.email %}
+      </section>
+      <section class="panel" aria-labelledby="c-del" style="margin-top:var(--s4)">
+        <h2 id="c-del">Saved delivery details</h2>
+        {% include 'store/_address_fields.html' with form=delivery %}
+      </section>
+      <div class="form-actions" style="margin-top:var(--s4)"><button class="btn" type="submit" data-busy><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Save customer</button></div>
+    </form>
+  </div>
+  <div>
+    <section class="panel" aria-labelledby="c-sum">
+      <h2 id="c-sum">Account</h2>
+      <dl class="meta">
+        <dt>Orders</dt><dd>{{ order_count }}</dd>
+        <dt>Lifetime paid</dt><dd><span class="price">₹{{ paid_total|floatformat:"2g" }}</span> across {{ paid_count }} paid order{{ paid_count|pluralize }}</dd>
+        <dt>Last sign-in</dt><dd>{{ person.last_login|date:"j M Y, H:i"|default:"Never" }}</dd>
+      </dl>
+    </section>
+    <section class="panel" aria-labelledby="c-act">
+      <h2 id="c-act">{% if person.is_active %}Deactivate account{% else %}Reactivate account{% endif %}</h2>
+      {% if person.is_active %}<p class="small muted">A deactivated customer cannot sign in. Their orders, payments and receipts are kept. You can reactivate the account at any time.</p>
+      {% else %}<p class="small muted">This customer cannot sign in. Reactivate the account to let them back in.</p>{% endif %}
+      <form method="post" action="{% url 'staff_customer_toggle' person.pk %}" style="margin-top:var(--s3)"{% if person.is_active %} data-confirm="Deactivate {{ person.username }}? They will not be able to sign in. Their orders are kept."{% endif %}>{% csrf_token %}
+        {% if person.is_active %}<button class="btn btn--danger" type="submit">Deactivate account</button>{% else %}<button class="btn" type="submit">Reactivate account</button>{% endif %}</form>
+    </section>
+  </div>
+</div>
+
+<section style="margin-top:var(--s6)" aria-labelledby="c-orders">
+  <div class="pane-head"><h2 id="c-orders">Order history</h2>{% if order_count > 25 %}<p>Showing the latest 25 of {{ order_count }}.</p>{% endif %}</div>
+  {% if history %}
+  <div class="tbl-wrap"><table class="tbl tbl--dense tbl--stack">
+    <thead><tr><th scope="col">Order</th><th scope="col">Placed</th><th scope="col">Payment</th><th scope="col">Status</th><th scope="col" class="num">Total</th></tr></thead>
+    <tbody>{% for order in history %}<tr>
+      <td data-label="Order"><a class="name" href="{% url 'sale' order.pk %}">#{{ order.pk }}</a></td>
+      <td data-label="Placed" class="nowrap">{{ order.created|date:"j M Y, H:i" }}</td>
+      <td data-label="Payment">{% include 'store/_staff_status.html' with status=order.payment.status %}</td>
+      <td data-label="Status">{% include 'store/_staff_status.html' with status=order.status %}</td>
+      <td data-label="Total" class="num">₹{{ order.total|floatformat:"2g" }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty"><img class="empty-mark" src="{% static 'store/brand/head-dark.png' %}" alt="" width="56" height="57" loading="lazy"><p>This customer has not placed an order yet.</p></div>{% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,137 @@
+{# Landing page introducing product categories and featured products. #}
+{% extends 'store/base.html' %}{% load static %}
+{% block title %}Power Pick · Electrical supplies for the trade and the home{% endblock %}
+{% block body_class %}is-home{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'store/card.css' %}"><link rel="stylesheet" href="{% static 'store/home.css' %}">{% endblock %}
+{% block content %}
+<svg width="0" height="0" class="sr-only" aria-hidden="true"><defs><symbol id="hm-star" viewBox="0 0 120 120"><polygon points="60.0,10.0 77.6,35.7 107.6,44.5 88.5,69.3 89.4,100.5 60.0,90.0 30.6,100.5 31.5,69.3 12.4,44.5 42.4,35.7" stroke-width="14" stroke-linejoin="round"/></symbol></defs></svg>
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-glow" aria-hidden="true">
+    <svg class="hs hs-1"><use href="#hm-star"/></svg><svg class="hs hs-2"><use href="#hm-star"/></svg><svg class="hs hs-3"><use href="#hm-star"/></svg>
+  </div>
+  <div class="wrap hero-in">
+    <div class="hero-copy">
+      <h1 id="hero-title">The right electrical part, found fast.</h1>
+      <p class="lead">Wires, MCBs, boards, switches, lighting and tools, with ratings, pack sizes and live stock on every listing.</p>
+      <form class="finder" action="{% url 'catalogue' %}" method="get" role="search" aria-label="Search the catalogue">
+        <label class="sr-only" for="hf-category">Category</label>
+        <select id="hf-category" name="category__name"><option value="">All categories</option>{% for c in categories %}<option value="{{ c.name }}">{{ c.name }}</option>{% endfor %}</select>
+        <label class="sr-only" for="hf-q">Rating or keyword</label>
+        <input id="hf-q" type="search" name="q" placeholder="Try 32 A MCB or 2.5 sq mm wire" autocomplete="off">
+        <button class="btn btn--lg" type="submit"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg><span>Search</span></button>
+      </form>
+      <ul class="quick" aria-label="Popular categories">
+        {% for c in categories|slice:":4" %}<li><a href="{% url 'catalogue' %}?category__name={{ c.name|urlencode }}"><svg class="i i--sm" aria-hidden="true"><use href="#{{ c.icon }}"/></svg>{{ c.name }}</a></li>{% endfor %}
+      </ul>
+    </div>
+    {% if hero_tiles %}
+    <div class="stage" aria-label="Featured products">
+      {% for product in hero_tiles|slice:":3" %}
+      <a class="frame frame-{{ forloop.counter }}" href="{% url 'detail' product.pk %}">
+        <span class="frame-photo"><img src="{{ product.image.url }}" alt="{{ product.name }}" width="760" height="570"{% if forloop.first %} fetchpriority="high"{% else %} loading="lazy"{% endif %}></span>
+        <span class="frame-tag"><b>{{ product.variant_group|default:product.name }}</b><span class="frame-meta"><span class="dot" aria-hidden="true"></span>{% if product.option_count > 1 %}From {% endif %}₹{% if product.option_count > 1 %}{{ product.from_price|floatformat:"2g" }}{% else %}{{ product.price|floatformat:"2g" }}{% endif %}</span></span>
+      </a>
+      {% endfor %}
+      <p class="stage-note"><span class="dot" aria-hidden="true"></span><span><b>{{ in_stock }} of {{ listed }}</b> in stock now</span></p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="wrap sect" aria-labelledby="cat-title">
+  <div class="sec-head">
+    <div><h2 id="cat-title">Shop by circuit</h2><p>From the supply to the lamp, every part of the job.</p></div>
+    <a class="btn btn--ghost" href="{% url 'catalogue' %}">All {{ listed }} product{{ listed|pluralize }}<svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+  </div>
+  <ul class="bento">
+    {% for c in categories %}
+    <li class="bt bt-{{ forloop.counter }}"><a href="{% url 'catalogue' %}?category__name={{ c.name|urlencode }}">
+      <span class="bt-text"><span class="bt-name">{{ c.name }}</span><span class="bt-count">{{ c.count }} product{{ c.count|pluralize }}</span></span>
+      <span class="bt-photo">{% if c.photo %}<img src="{{ c.photo }}" alt="" width="760" height="570" loading="lazy">{% else %}<svg class="i" aria-hidden="true"><use href="#{{ c.icon }}"/></svg>{% endif %}</span>
+      <span class="bt-go" aria-hidden="true"><svg class="i i--sm"><use href="#i-arrow-right"/></svg></span>
+    </a></li>
+    {% endfor %}
+  </ul>
+</section>
+
+{% if featured %}
+<section class="wrap sect" aria-labelledby="stock-title">
+  <div class="sec-head">
+    <div><h2 id="stock-title">Fresh in stock</h2><p>Add to cart from here. Stock is checked again at checkout.</p></div>
+    <a class="btn btn--ghost" href="{% url 'catalogue' %}?instock=1">Shop all in stock<svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+  </div>
+  <div class="fresh">
+    <div class="fresh-lead">{% include 'store/card.html' with product=featured.0 lead=True %}</div>
+    <div class="fresh-row" tabindex="0" aria-label="More products in stock, scroll sideways">
+      {% for p in featured|slice:"1:" %}<div class="fresh-item">{% include 'store/card.html' with product=p %}</div>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="pro" aria-labelledby="pro-title">
+  <div class="wrap pro-in">
+    <div class="pro-copy">
+      <h2 id="pro-title">Reorder what you used last time.</h2>
+      <p>Every order stays in your history with its items and the prices you paid. Open one to print a receipt or put the same items back in your cart.</p>
+      <div class="row">
+        {% if user.is_authenticated %}
+          <a class="btn btn--lg pro-btn" href="{% url 'orders' %}">Open your orders<svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+          {% if last_order %}<a class="pro-last" href="{% url 'order_detail' last_order.pk %}">Latest order #{{ last_order.pk }}, {{ last_order.created|date:"j M Y" }}</a>{% endif %}
+        {% else %}
+          <a class="btn btn--lg pro-btn" href="{% url 'login' %}?next={% url 'orders' %}">Sign in to see your orders<svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+          <a class="pro-last" href="{% url 'register' %}">Create an account</a>
+        {% endif %}
+      </div>
+    </div>
+    <ul class="pro-list">
+      <li><svg class="i" aria-hidden="true"><use href="#i-package"/></svg><b>Order history</b><span>Every order, newest first, with payment status.</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg><b>Order again</b><span>Put a past order's items back in your cart.</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#i-receipt"/></svg><b>Receipts</b><span>A printable receipt for any order.</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#i-map-pin"/></svg><b>Saved delivery details</b><span>Your address and phone, filled in at checkout.</span></li>
+    </ul>
+  </div>
+</section>
+
+{% if brands %}
+<section class="wrap sect" aria-labelledby="brand-title">
+  <h2 id="brand-title" class="brand-h">Brands on the shelf</h2>
+  <ul class="brands">{% for b in brands %}<li><a href="{% url 'catalogue' %}?brand={{ b.brand|urlencode }}"><b>{{ b.brand }}</b><span>{{ b.count }} product{{ b.count|pluralize }}</span></a></li>{% endfor %}</ul>
+</section>
+{% endif %}
+
+<section class="wrap sect" aria-labelledby="trust-title">
+  <h2 id="trust-title" class="sr-only">Why order here</h2>
+  <ul class="trust">
+    <li><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg><b>Pay your way</b><span>Cash on delivery, or Razorpay by UPI, cards or netbanking.</span></li>
+    <li><svg class="i" aria-hidden="true"><use href="#i-bolt"/></svg><b>Live stock</b><span>Every listing shows what is on the shelf now.</span></li>
+    <li><svg class="i" aria-hidden="true"><use href="#i-tag"/></svg><b>Price saved on every order</b><span>The price you paid stays on your order.</span></li>
+    <li><svg class="i" aria-hidden="true"><use href="#i-truck"/></svg><b>Order tracking</b><span>Follow each order's status from your account.</span></li>
+  </ul>
+</section>
+
+<section class="wrap sect" aria-labelledby="close-title">
+  <div class="closing">
+    <img class="closing-mascot" src="{% static 'store/brand/mascot-wave.webp' %}" alt="" width="240" height="235" loading="lazy">
+    <div class="closing-copy">
+      <h2 id="close-title">Hello. Not sure which part fits?</h2>
+      <p>Ask the Power Pick assistant about ratings, stock or your orders, or browse the full catalogue.</p>
+      <div class="row">
+        <button class="btn btn--lg closing-ask" type="button" data-open-assistant hidden><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg>Ask Power Pick</button>
+        <a class="btn btn--lg btn--ghost closing-shop" href="{% url 'catalogue' %}">Shop all {{ listed }} product{{ listed|pluralize }}<svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{% static 'store/catalogue.js' %}" defer></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var ask = document.querySelector("[data-open-assistant]");
+  var launch = document.querySelector(".pp-help-launch");
+  if (!ask || !launch) return;
+  setTimeout(function () { if (!launch.hidden) ask.hidden = false; }, 400);
+  ask.addEventListener("click", function () { launch.click(); });
+});
+</script>{% endblock %}

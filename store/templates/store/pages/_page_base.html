@@ -1,0 +1,36 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{# Shared reading layout for help pages. Child templates fill `toc` and `page_body`; title, summary and sheet code come from store/pages.py. #}
+{% block title %}{{ page.title }} · Power Pick{% endblock %}
+{% block meta_description %}{{ page.summary }}{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'store/pages.css' %}">{% endblock %}
+{% block body_class %}page-help{% endblock %}
+{% block content %}
+<header class="page-band">
+  <div class="wrap">
+    <nav aria-label="Breadcrumb"><ol class="crumbs">
+      <li><a href="{% url 'home' %}">Home</a></li>
+      <li><span aria-current="page">{{ page.title }}</span></li>
+    </ol></nav>
+    <div class="band-copy">
+      <h1>{{ page.title }}</h1>
+      <p>{{ page.summary }}</p>
+    </div>
+  </div>
+</header>
+
+<div class="wrap page">
+  <div class="page-grid{% block grid_class %}{% endblock %}">
+    {% block toc_wrap %}
+    <nav class="toc" aria-label="On this page">
+      <p class="toc-title">On this page</p>
+      <ol>{% block toc %}{% endblock %}</ol>
+    </nav>
+    {% endblock %}
+    <article class="prose">
+      {% block page_body %}{% endblock %}
+      <p class="prose-end">Questions this page does not answer? <a href="{% url 'page' 'contact' %}">See how to get help</a>.</p>
+    </article>
+  </div>
+</div>
+{% endblock %}

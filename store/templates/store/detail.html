@@ -1,0 +1,145 @@
+{# Product page with options, stock, cart controls, specifications and reviews. #}
+{% extends 'store/base.html' %}{% load static %}
+{% block title %}{{ product.name }} · Power Pick{% endblock %}
+{% block meta_description %}{{ product.brand }} {{ product.name }}. {{ product.description|truncatechars:130 }}{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'store/card.css' %}"><link rel="stylesheet" href="{% static 'store/detail.css' %}">
+<script type="application/ld+json">{{ schema_json|safe }}</script>{% endblock %}
+{% block body_class %}pd-page{% endblock %}
+{% block content %}
+{% url 'wishlist_toggle' product.pk as wishlist_url %}
+<div class="wrap pd">
+  <nav aria-label="Breadcrumb"><ol class="crumbs">
+    <li><a href="{% url 'catalogue' %}">Shop</a></li>
+    <li><a href="{% url 'catalogue' %}?category__name={{ product.category.name|urlencode }}">{{ product.category }}</a></li>
+    <li><span aria-current="page">{{ product.variant_group|default:product.name }}</span></li>
+  </ol></nav>
+
+  <div class="pd-top">
+    <figure class="pd-photo" data-zoom>
+        <svg class="pd-glow" viewBox="0 0 400 300" aria-hidden="true" focusable="false"><path d="M300 40l14 30 32 4-24 22 6 32-28-16-28 16 6-32-24-22 32-4z"/><path d="M90 190l10 22 24 3-18 16 5 24-21-12-21 12 5-24-18-16 24-3z"/><circle cx="330" cy="230" r="22"/></svg>
+        {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}, {{ product.brand }}" width="760" height="570" fetchpriority="high">
+        {% else %}<span class="pd-nophoto"><svg class="i" aria-hidden="true"><use href="#i-box-open"/></svg>No photo for this product yet</span>{% endif %}
+    </figure>
+
+    <div class="pd-buy">
+      <div class="pd-head">
+        <h1>{{ product.variant_group|default:product.name }}</h1>
+        <p class="pd-sub"><a href="{% url 'catalogue' %}?brand={{ product.brand|urlencode }}">{{ product.brand }}</a><span aria-hidden="true">/</span><a href="{% url 'catalogue' %}?category__name={{ product.category.name|urlencode }}">{{ product.category }}</a>{% if product.variant_label and variant_count < 2 %}<span aria-hidden="true">/</span><span class="mono">{{ product.variant_label }}</span>{% endif %}</p>
+        <a class="pd-rating" href="#reviews">
+          {% if summary.count %}
+          <span class="stars" role="img" aria-label="Rated {{ summary.average }} out of 5">{% for n in stars %}<svg class="i{% if n <= summary.rounded %} on{% endif %}" aria-hidden="true"><use href="#i-star"/></svg>{% endfor %}</span>
+          <strong>{{ summary.average }}</strong><span>{{ summary.count }} review{{ summary.count|pluralize }}</span>
+          {% else %}<span class="stars" aria-hidden="true">{% for n in stars %}<svg class="i" aria-hidden="true"><use href="#i-star"/></svg>{% endfor %}</span><span>No reviews yet</span>{% endif %}
+        </a>
+      </div>
+
+      <div class="pd-priceblock">
+        <p class="price pd-price"><span class="sr-only">Price </span>₹{{ product.price|floatformat:"2g" }}</p>
+        <p class="pd-stock">{% include 'store/_stock.html' with product=product %}{% if product.stock %}<span class="pd-units">{{ product.stock }} unit{{ product.stock|pluralize }} in stock</span>{% endif %}</p>
+      </div>
+
+      {% if variant_count > 1 %}
+      <div class="pd-options">
+        <p class="cell-label" id="opt-label">Option <span class="pd-opt-now">{{ product.variant_label }} selected</span></p>
+        <ul class="opts" aria-labelledby="opt-label">
+          {% for v in variants %}
+          <li>{% if v.pk == product.pk %}<a class="opt is-current{% if not v.stock %} is-out{% endif %}" href="{% url 'detail' v.pk %}" aria-current="true"><span class="opt-name">{{ v.variant_label }}</span><span class="opt-price">₹{{ v.price|floatformat:"2g" }}</span><span class="opt-stock">{% if v.stock %}{{ v.stock }} in stock{% else %}Sold out{% endif %}</span></a>
+          {% elif v.stock %}<a class="opt" href="{% url 'detail' v.pk %}"><span class="opt-name">{{ v.variant_label }}</span><span class="opt-price">₹{{ v.price|floatformat:"2g" }}</span><span class="opt-stock">{{ v.stock }} in stock</span></a>
+          {% else %}<span class="opt is-out" aria-disabled="true"><span class="opt-name">{{ v.variant_label }}</span><span class="opt-price">₹{{ v.price|floatformat:"2g" }}</span><span class="opt-stock">Sold out</span></span>{% endif %}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <div class="pd-actions">
+        <form id="buy" class="pd-buyform" method="post" action="{% url 'change_cart' product.pk %}" data-product="{{ product.pk }}">
+          {% csrf_token %}<input type="hidden" name="action" value="add"><input type="hidden" name="next" value="{% url 'detail' product.pk %}">
+          {% if room > 0 %}
+          <div class="pd-qty"><label class="cell-label" for="qty">Quantity</label>
+            <div class="qty"><button type="button" data-qty-minus aria-label="Decrease quantity"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button><input id="qty" type="number" name="quantity" min="1" max="{{ room }}" value="1" inputmode="numeric"><button type="button" data-qty-plus aria-label="Increase quantity"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button></div>
+          </div>
+          <button id="buy-submit" class="btn btn--lg pd-add" type="submit" data-busy><svg class="i" aria-hidden="true"><use href="#i-cart"/></svg>Add to cart</button>
+          {% else %}
+          <button id="buy-submit" class="btn btn--lg pd-add" type="button" disabled aria-describedby="buy-note"><svg class="i" aria-hidden="true"><use href="#i-cart"/></svg>{% if product.stock %}Add to cart{% else %}Out of stock{% endif %}</button>
+          {% endif %}
+        </form>
+        {% if not product.stock %}
+        <p class="pd-note" id="buy-note">{% if variant_count > 1 and others_in_stock %}This option is sold out. Choose an option above that shows stock.{% else %}This product is sold out. Restock dates are not listed, so check back later.{% endif %}</p>
+        {% elif room == 0 %}
+        <p class="pd-note" id="buy-note">All {{ product.stock }} unit{{ product.stock|pluralize }} in stock {% if product.stock == 1 %}is{% else %}are{% endif %} already in your cart. <a href="{% url 'cart' %}">Open cart</a></p>
+        {% elif in_cart %}
+        <p class="pd-note">You already have {{ in_cart }} in your cart. You can add up to {{ room }} more.</p>
+        {% endif %}
+        <p class="pd-status" id="buy-status" role="status" aria-live="polite"></p>
+
+        {% if wishlist_url %}
+        <form class="pd-save" method="post" action="{{ wishlist_url }}" data-wishlist>
+          {% csrf_token %}<input type="hidden" name="next" value="{% url 'detail' product.pk %}">
+          <button class="btn btn--ghost" type="submit" aria-pressed="{% if saved %}true{% else %}false{% endif %}"><svg class="i" aria-hidden="true"><use href="#i-heart"/></svg><span data-wish-label>{% if saved %}Saved to wishlist{% else %}Save to wishlist{% endif %}</span></button>
+        </form>
+        {% endif %}
+      </div>
+
+      <div class="pd-assure">
+      <ul class="pd-trust">
+        <li><svg class="i" aria-hidden="true"><use href="#i-shield"/></svg>Pay securely online with Razorpay (UPI, cards, netbanking).</li>
+        <li><svg class="i" aria-hidden="true"><use href="#i-receipt"/></svg>The price you pay is saved on your order and receipt.</li>
+        <li><svg class="i" aria-hidden="true"><use href="#i-box-open"/></svg>Stock is checked again when you check out.</li>
+      </ul>
+      <ul class="pd-pay" aria-label="Payment methods accepted through Razorpay">
+        <li><img src="{% static 'store/pay/upi-default.svg' %}" alt="UPI" width="44" height="22"></li>
+        <li><img src="{% static 'store/pay/google-pay-default.svg' %}" alt="Google Pay" width="22" height="22"></li>
+        <li><img src="{% static 'store/pay/phonepe-default.svg' %}" alt="PhonePe" width="22" height="22"></li>
+        <li><img src="{% static 'store/pay/paytm-default.svg' %}" alt="Paytm" width="22" height="22"></li>
+        <li><img src="{% static 'store/pay/visa-default.svg' %}" alt="Visa" width="22" height="22"></li>
+        <li><img src="{% static 'store/pay/mastercard-default.svg' %}" alt="Mastercard" width="22" height="22"></li>
+      </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="pd-detail">
+    <section aria-labelledby="desc-h">
+      <h2 id="desc-h">About this product</h2>
+      <div class="pd-desc">{{ product.description|linebreaks }}</div>
+    </section>
+    <section aria-labelledby="spec-h">
+      <h2 id="spec-h">Specifications</h2>
+      {% if spec_rows %}<dl class="spec-list">{% for label, value in spec_rows %}<dt>{{ label }}</dt><dd>{{ value }}</dd>{% endfor %}</dl>
+      {% elif not spec_notes %}<p class="muted">No specifications have been listed for this product.</p>{% endif %}
+      {% if spec_notes %}<ul class="spec-notes">{% for note in spec_notes %}<li>{{ note }}</li>{% endfor %}</ul>{% endif %}
+    </section>
+  </div>
+
+  {% include 'store/_reviews.html' %}
+
+  {% if related %}
+  <section class="pd-more" aria-labelledby="rel-h">
+    <div class="sec-head"><h2 id="rel-h">More in {{ product.category }}</h2><a href="{% url 'catalogue' %}?category__name={{ product.category.name|urlencode }}">Browse all {{ product.category }}<svg class="i i--sm" aria-hidden="true"><use href="#i-arrow-right"/></svg></a></div>
+    <div class="pd-cards">{% for p in related %}{% include 'store/card.html' with product=p %}{% endfor %}</div>
+  </section>
+  {% endif %}
+
+  {% if recent %}
+  <section class="pd-recent" aria-labelledby="rec-h">
+    <h2 id="rec-h">Recently viewed</h2>
+    <ul class="recent-list">
+      {% for r in recent %}<li><a href="{% url 'detail' r.pk %}">
+        <span class="recent-photo">{% if r.image %}<img src="{{ r.image.url }}" alt="" loading="lazy" width="96" height="72">{% endif %}</span>
+        <span class="recent-name">{{ r.variant_group|default:r.name }}{% if r.variant_label %} <span class="mono">{{ r.variant_label }}</span>{% endif %}</span>
+        <span class="price recent-price">₹{{ r.price|floatformat:"2g" }}</span></a></li>{% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</div>
+
+{% if product.stock and room > 0 %}
+<div class="buybar" id="buybar" inert>
+  <div class="buybar-in">
+    <div class="buybar-info"><span class="price">₹{{ product.price|floatformat:"2g" }}</span><span class="buybar-sub">{{ product.variant_label|default:product.brand }}</span></div>
+    <button class="btn" type="submit" form="buy"><svg class="i" aria-hidden="true"><use href="#i-cart"/></svg>Add to cart</button>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block scripts %}<script src="{% static 'store/catalogue.js' %}" defer></script><script src="{% static 'store/detail.js' %}" defer></script>{% endblock %}

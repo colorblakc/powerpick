@@ -1,0 +1,43 @@
+{# Products the signed-in customer saved for later. #}
+{% extends 'store/base.html' %}{% load static %}
+{% block title %}Wishlist · Power Pick{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'store/card.css' %}"><link rel="stylesheet" href="{% static 'store/catalogue.css' %}">{% endblock %}
+{% block content %}
+<div class="wrap shop">
+  <header class="shop-head">
+    <nav aria-label="Breadcrumb"><ol class="crumbs"><li><a href="{% url 'home' %}">Home</a></li><li aria-current="page">Wishlist</li></ol></nav>
+    <h1>Your wishlist</h1>
+    {% if items %}<p class="shop-lede">{{ items|length }} saved product{{ items|length|pluralize }}. Move a product to the cart when you are ready to order.</p>{% endif %}
+  </header>
+  {% if items %}
+  <ul class="wl-list">
+    {% for product in items %}
+    <li class="wl-row">
+      <a class="wl-photo" href="{% url 'detail' product.pk %}" tabindex="-1" aria-hidden="true">{% if product.image %}<img src="{{ product.image.url }}" alt="" width="190" height="142" loading="lazy">{% else %}<svg class="i i--lg" aria-hidden="true"><use href="#i-box-open"/></svg>{% endif %}</a>
+      <div class="wl-info">
+        <p class="card-brand">{{ product.brand }}</p>
+        <h2 class="wl-name"><a href="{% url 'detail' product.pk %}">{{ product.name }}</a></h2>
+        {% if product.spec_line %}<p class="card-spec">{{ product.spec_line }}</p>{% endif %}
+        <div class="wl-meta"><span class="price">₹{{ product.price|floatformat:"2g" }}</span>{% include 'store/_stock.html' with product=product %}</div>
+      </div>
+      <div class="wl-actions">
+        <form method="post" action="{% url 'wishlist_toggle' product.pk %}">{% csrf_token %}<input type="hidden" name="move" value="cart"><input type="hidden" name="next" value="{% url 'wishlist' %}">
+          <button class="btn btn--sm" type="submit" data-busy{% if product.stock < 1 %} disabled{% endif %}><svg class="i" aria-hidden="true"><use href="#i-cart"/></svg>{% if product.stock < 1 %}Out of stock{% else %}Move to cart<span class="sr-only">: {{ product.name }}</span>{% endif %}</button></form>
+        <form method="post" action="{% url 'wishlist_toggle' product.pk %}">{% csrf_token %}<input type="hidden" name="state" value="remove"><input type="hidden" name="next" value="{% url 'wishlist' %}">
+          <button class="btn btn--ghost btn--sm" type="submit"><svg class="i" aria-hidden="true"><use href="#i-trash"/></svg>Remove<span class="sr-only"> {{ product.name }} from wishlist</span></button></form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="none">
+    <img class="none-art" src="{% static 'store/brand/mascot-full.webp' %}" alt="" width="220" height="220" loading="lazy">
+    <div class="none-copy">
+      <h2>Nothing saved yet</h2>
+      <p>Tap the heart on any product to keep it here while you compare ratings and prices.</p>
+      <a class="btn" href="{% url 'catalogue' %}">Browse products</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

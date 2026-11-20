@@ -1,0 +1,48 @@
+{# Terms for using the store and placing orders. #}
+{% extends 'store/pages/_page_base.html' %}
+{% block toc %}
+<li><a href="#using">About these terms</a></li>
+<li><a href="#accounts">Accounts</a></li>
+<li><a href="#orders">Orders and prices</a></li>
+<li><a href="#info">Product information and safety</a></li>
+<li><a href="#assistant">The assistant</a></li>
+<li><a href="#use">Using the site</a></li>
+{% endblock %}
+{% block page_body %}
+<p class="lead">These terms are short and in plain language. They apply when you use the Power Pick website, browse its catalogue, create an account or place an order.</p>
+
+<section aria-labelledby="using">
+  <h2 id="using">About these terms</h2>
+  <p>By creating an account or placing an order you agree to these terms. If you do not agree, please do not use the site. Power Pick may update these terms, and the version on this page is the one that applies.</p>
+</section>
+
+<section aria-labelledby="accounts">
+  <h2 id="accounts">Accounts</h2>
+  <p>You are responsible for keeping your password private and for what happens under your account. Give accurate details, since your delivery address and phone number are used on your orders. Customer accounts cannot be made into staff accounts by signing up.</p>
+</section>
+
+<section aria-labelledby="orders">
+  <h2 id="orders">Orders and prices</h2>
+  <ul class="plain-list">
+    <li>Prices are in Indian rupees (₹). Stock and price are checked again when you place an order, and the price paid is saved on the order.</li>
+    <li>You can pay online through Razorpay or choose cash on delivery and pay in cash when the order is delivered.</li>
+    <li>An order's status is Pending, Confirmed, Processing, Shipped, Delivered or Cancelled. See <a href="{% url 'page' 'cancellations' %}">Cancellations</a> for what you can cancel.</li>
+    <li>This site does not quote delivery times or delivery charges, and makes no warranty or refund promise of its own. For a product's warranty, check the manufacturer's documents.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="info">
+  <h2 id="info">Product information and safety</h2>
+  <p>Specifications are given to help you compare products. Check them against the manufacturer's documents before you buy. Electrical work can be dangerous. Choose and install parts according to the rules that apply where you are, and use a qualified electrician when you are not sure.</p>
+</section>
+
+<section aria-labelledby="assistant">
+  <h2 id="assistant">The assistant</h2>
+  <p>The assistant gives general answers from the catalogue and the store's FAQs and may be incomplete or wrong. It is not a substitute for a manufacturer's documentation or an electrician's advice. Questions you ask it are sent to Groq to generate answers, as described in <a href="{% url 'page' 'privacy' %}">Privacy</a>.</p>
+</section>
+
+<section aria-labelledby="use">
+  <h2 id="use">Using the site</h2>
+  <p>Please use the site only for its intended purpose: browsing, ordering and managing your own account. Do not try to break it, read other people's accounts or orders, or overload it. The store owner may remove accounts or content that do.</p>
+</section>
+{% endblock %}

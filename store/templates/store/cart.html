@@ -1,0 +1,84 @@
+{# Cart items and quantities are shown with the latest server-calculated totals. #}
+{% extends 'store/base.html' %}{% load static %}
+{% block title %}Your cart · Power Pick{% endblock %}
+{% block meta_description %}Review quantities and stock for the items in your Power Pick cart before you check out.{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'store/cart.css' %}">{% endblock %}
+{% block content %}
+<script>document.documentElement.classList.add("js")</script>
+<div class="wrap flow" data-cart-page>
+  <header class="flow-head">
+    <div>
+      <h1 id="cart-heading" tabindex="-1">Your cart</h1>
+      {% if lines %}<p class="muted" data-cart-sub>{{ item_count }} item{{ item_count|pluralize }}. Check quantities, then continue to checkout.</p>{% endif %}
+    </div>
+    {% if lines %}{% include 'store/_steps.html' with current=1 %}{% endif %}
+  </header>
+  <div id="cart-live" class="sr-only" role="status" aria-live="polite"></div>
+
+  {% if lines %}
+  <div class="cart-layout" data-cart-layout>
+    <section aria-labelledby="cart-heading">
+      <ul class="cart-lines">
+        {% for line in lines %}{% with p=line.product %}
+        <li class="cart-line{% if line.blocked %} is-blocked{% endif %}" data-line="{{ p.pk }}" data-name="{{ p.name }}" data-blocked="{% if line.blocked %}1{% else %}0{% endif %}" data-quantity="{{ line.quantity }}">
+          <a class="cart-photo" href="{% url 'detail' p.pk %}" tabindex="-1">{% if p.image %}<img src="{{ p.image.url }}" alt="{{ p.name }}" width="96" height="96" loading="lazy">{% else %}<svg class="i" aria-hidden="true"><use href="#i-parts"/></svg>{% endif %}</a>
+          <div class="cart-body">
+            <h2 class="cart-name"><a href="{% url 'detail' p.pk %}">{{ p.variant_group|default:p.name }}</a></h2>
+            <p class="cart-meta">{{ p.brand }}{% if p.variant_label %} <span aria-hidden="true">/</span> <span class="mono">{{ p.variant_label }}</span>{% endif %}</p>
+            {% if line.unavailable %}
+            <div class="notice notice--fault cart-warn" data-warn="unavailable"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg><div><b>No longer available.</b> Remove this item to continue to checkout.</div></div>
+            {% else %}
+            <p class="cart-stock">{% include 'store/_stock.html' with product=p %}</p>
+            {% if line.over_stock %}
+            <div class="notice notice--warn cart-warn" data-warn="over"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg>
+              <div><b>Only {{ p.stock }} in stock.</b> You have {{ line.quantity }} in your cart. Lower it to {{ p.stock }} or fewer to check out.
+                <form class="cart-fix" method="post" action="{% url 'change_cart' p.pk %}" data-cart-form>{% csrf_token %}<input type="hidden" name="next" value="{% url 'cart' %}"><input type="hidden" name="quantity" value="{{ p.stock }}"><button type="submit" name="action" value="set" class="link-btn">Change to {{ p.stock }}</button></form></div></div>
+            {% endif %}
+            {% endif %}
+          </div>
+          <form class="cart-controls" method="post" action="{% url 'change_cart' p.pk %}" data-cart-form>
+            {% csrf_token %}<input type="hidden" name="next" value="{% url 'cart' %}">
+            {% if not line.unavailable %}
+            <div class="qty">
+              <button type="button" data-qty-minus aria-label="Decrease quantity of {{ p.name }}"><svg class="i i--sm" aria-hidden="true"><use href="#i-minus"/></svg></button>
+              <input type="number" name="quantity" value="{{ line.quantity }}" min="1" max="{% if line.over_stock %}{{ line.quantity }}{% else %}{{ p.stock }}{% endif %}" inputmode="numeric" aria-label="Quantity of {{ p.name }}">
+              <button type="button" data-qty-plus aria-label="Increase quantity of {{ p.name }}"><svg class="i i--sm" aria-hidden="true"><use href="#i-plus"/></svg></button>
+            </div>
+            <button type="submit" name="action" value="set" class="btn btn--ghost btn--sm cart-update">Update</button>
+            {% endif %}
+            <button type="submit" name="action" value="remove" class="btn btn--ghost btn--sm cart-remove" formnovalidate aria-label="Remove {{ p.name }} from cart"><svg class="i i--sm" aria-hidden="true"><use href="#i-trash"/></svg>Remove</button>
+          </form>
+          <p class="cart-price"><span class="muted xs">₹{{ p.price|floatformat:"2g" }} each</span><strong class="price" data-line-total>₹{{ line.subtotal|floatformat:"2g" }}</strong></p>
+        </li>
+        {% endwith %}{% endfor %}
+      </ul>
+      <p class="cart-continue"><a class="btn btn--ghost btn--sm" href="{% url 'catalogue' %}"><svg class="i i--sm" aria-hidden="true"><use href="#i-arrow-left"/></svg>Continue shopping</a></p>
+    </section>
+
+    <aside class="cart-summary panel" aria-labelledby="summary-heading">
+      <h2 id="summary-heading">Order summary</h2>
+      <dl class="sum">
+        <div><dt>Subtotal (<span data-count>{{ item_count }}</span> item{{ item_count|pluralize }})</dt><dd data-total>₹{{ total|floatformat:"2g" }}</dd></div>
+        <div><dt>Delivery</dt><dd class="muted">Details taken at checkout</dd></div>
+      </dl>
+      <p class="sum-total"><span>Total</span><strong class="price" data-total>₹{{ total|floatformat:"2g" }}</strong></p>
+      <div class="cart-cta">
+        {% if user.is_authenticated %}
+        <a class="btn btn--lg btn--block" href="{% url 'checkout' %}" data-cta="ready"{% if blocked_count %} hidden{% endif %}>Continue to checkout<svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+        {% else %}
+        <a class="btn btn--lg btn--block" href="{% url 'login' %}?next={% url 'checkout' %}" data-cta="ready"{% if blocked_count %} hidden{% endif %}>Sign in to check out</a>
+        {% endif %}
+        <p class="notice notice--fault cart-blocked" data-cta="blocked"{% if not blocked_count %} hidden{% endif %}><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg><span>Fix the items marked above to continue. Remove them or lower their quantity.</span></p>
+      </div>
+      {% if not user.is_authenticated %}
+      <p class="notice notice--blue cart-signin"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg><span>Your cart is kept while you sign in. New here? <a href="{% url 'register' %}">Create an account</a>, it takes a minute.</span></p>
+      {% endif %}
+      <p class="muted xs cart-pay-note">Choose cash on delivery or pay online with Razorpay at checkout. Power Pick never stores card or UPI details.</p>
+    </aside>
+  </div>
+  <template id="cart-empty-tpl">{% include 'store/_cart_empty.html' %}</template>
+  {% else %}
+  {% include 'store/_cart_empty.html' %}
+  {% endif %}
+</div>
+{% endblock %}

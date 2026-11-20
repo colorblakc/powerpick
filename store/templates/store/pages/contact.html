@@ -1,0 +1,58 @@
+{# Store contact details and support information. #}
+{% extends 'store/pages/_page_base.html' %}
+{% block grid_class %} page-grid--solo{% endblock %}
+{% block toc_wrap %}{% endblock %}
+{% block page_body %}
+<section aria-labelledby="details">
+  <h2 id="details">Store contact details</h2>
+  {% if contact.any %}
+  <dl class="spec-list contact-list">
+    {% if contact.name %}<dt>Contact</dt><dd>{{ contact.name }}</dd>{% endif %}
+    {% if contact.email %}<dt>Email</dt><dd><a href="mailto:{{ contact.email }}">{{ contact.email }}</a></dd>{% endif %}
+    {% if contact.phone %}<dt>Phone</dt><dd><a href="tel:{{ contact.phone|cut:' ' }}">{{ contact.phone }}</a></dd>{% endif %}
+    {% if contact.address %}<dt>Address</dt><dd>{{ contact.address|linebreaksbr }}</dd>{% endif %}
+  </dl>
+  {% else %}
+  <div class="notice notice--blue">
+    <svg class="i" aria-hidden="true"><use href="#i-info"/></svg>
+    <p>The store owner has not added contact details yet. Until they do, use the assistant for product and store questions, and your order page for anything about an order you have placed.</p>
+  </div>
+  {% endif %}
+</section>
+
+<section aria-labelledby="assistant">
+  <h2 id="assistant">Ask the assistant</h2>
+  <p>The Power Pick assistant answers questions about the catalogue, stock, accounts, ordering and payments. It works from the product listings and the store's published FAQs. It can show a signed-in customer the status of their own orders.</p>
+  <p>Questions you type are sent to Groq, an outside service, to help work out the answer. Do not put passwords, card numbers or other private details in a question. See <a href="{% url 'page' 'privacy' %}">Privacy</a>.</p>
+  <p><button type="button" class="btn" data-open-assistant hidden><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg>Open the assistant</button></p>
+  <noscript><p class="muted small">The assistant needs JavaScript. Without it, use the pages linked on this page.</p></noscript>
+</section>
+
+<section aria-labelledby="topics">
+  <h2 id="topics">What the assistant can help with</h2>
+  <ul class="ruled ruled--text">
+    <li><strong>Finding products.</strong> Searching, browsing by category, filtering by brand or budget, and what to compare when choosing wire, MCBs, switches, lighting or tools.</li>
+    <li><strong>Stock and prices.</strong> How availability is shown and why stock can change while you shop.</li>
+    <li><strong>Accounts.</strong> Registering, signing in, and saving delivery details.</li>
+    <li><strong>Ordering and payment.</strong> Placing an order, paying with Razorpay, what to do if payment fails, and what each order status means.</li>
+  </ul>
+  <p>If the assistant has no verified answer, it says so rather than guessing.</p>
+</section>
+
+<section aria-labelledby="orders">
+  <h2 id="orders">Questions about an order</h2>
+  <p>Open the order from <a href="{% url 'orders' %}">your orders</a> to see its status, items, delivery address and payment record. You can pay for or cancel an unpaid order from the same page. See <a href="{% url 'page' 'cancellations' %}">Cancellations</a> for the rules.</p>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+  // The assistant is an optional extra: show this button only once its launcher exists.
+  (function () {
+    var open = document.querySelector('[data-open-assistant]');
+    var launch = document.querySelector('.pp-help-launch');
+    if (!open || !launch) return;
+    open.hidden = false;
+    open.addEventListener('click', function () { launch.click(); });
+  })();
+</script>
+{% endblock %}

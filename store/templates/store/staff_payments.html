@@ -1,0 +1,46 @@
+{# Payment records, filters and export controls for staff. #}
+{% extends 'store/staff_base.html' %}{% load static %}
+{% block staff_title %}Payments{% endblock %}
+{% block heading %}Payments{% endblock %}
+{% block sub %}<p>Every payment record. Status comes from Razorpay and cannot be edited here.</p>{% endblock %}
+{% block actions %}<a class="btn btn--ghost btn--sm" href="{% url 'staff_payments_csv' %}{% if export_qs %}?{{ export_qs }}{% endif %}"><svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Export CSV{% if export_qs %} (filtered){% endif %}</a>{% endblock %}
+
+{% block staff_content %}
+<form class="filters" method="get" role="search" aria-label="Filter payments">
+  <div class="f f--grow"><label for="f-q">Reference, order or customer</label><input id="f-q" type="search" name="q" value="{{ request.GET.q }}" placeholder="pay_… order_… or an order number" autocomplete="off"></div>
+  <div class="f"><label for="f-status">Status</label><select id="f-status" name="status"><option value="">Any status</option>{% for s in payment_statuses %}<option value="{{ s }}"{% if request.GET.status == s %} selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+  <div class="f"><label for="f-method">Method</label><select id="f-method" name="method"><option value="">Any method</option>{% for m in methods %}<option value="{{ m }}"{% if request.GET.method == m %} selected{% endif %}>{{ m }}</option>{% endfor %}</select></div>
+  <div class="f f--date"><label for="f-from">Placed from</label><input id="f-from" type="date" name="from" value="{{ request.GET.from }}"></div>
+  <div class="f f--date"><label for="f-to">Placed to</label><input id="f-to" type="date" name="to" value="{{ request.GET.to }}"></div>
+  <div class="filters-end"><button class="btn btn--sm" type="submit">Apply</button>{% if request.GET.q or request.GET.status or request.GET.method or request.GET.from or request.GET.to %}<a class="btn btn--ghost btn--sm" href="{% url 'staff_payments' %}">Clear</a>{% endif %}</div>
+</form>
+
+<div class="sumline" aria-label="Totals for the filtered payments">
+  <div><span class="cell-label">Records</span><b>{{ totals.count }}</b></div>
+  <div><span class="cell-label">Paid</span><b>₹{{ totals.paid|floatformat:"2g" }}</b></div>
+  <div><span class="cell-label">Not paid</span><b>₹{{ totals.open|floatformat:"2g" }}</b></div>
+</div>
+
+{% if page %}
+<div class="tbl-wrap"><table class="tbl tbl--dense tbl--stack">
+  <thead><tr><th scope="col">Order</th><th scope="col">Placed</th><th scope="col">Customer</th><th scope="col">Method</th><th scope="col">Status</th><th scope="col">Payment reference</th><th scope="col">Razorpay order</th><th scope="col" class="num">Amount</th></tr></thead>
+  <tbody>
+  {% for payment in page %}
+    <tr>
+      <td data-label="Order"><a class="name" href="{% url 'sale' payment.order_id %}">#{{ payment.order_id }}</a></td>
+      <td data-label="Placed" class="nowrap">{{ payment.order.created|date:"j M Y, H:i" }}</td>
+      <td data-label="Customer">{{ payment.order.user.get_full_name|default:payment.order.user.username }}</td>
+      <td data-label="Method">{% include 'store/_staff_method.html' with method=payment.method %}</td>
+      <td data-label="Status">{% include 'store/_staff_status.html' with status=payment.status %}</td>
+      <td data-label="Payment reference" class="mono-sm">{{ payment.reference|default:"None yet" }}</td>
+      <td data-label="Razorpay order" class="mono-sm">{{ payment.gateway_order|default:"Not created" }}</td>
+      <td data-label="Amount" class="num">₹{{ payment.order.total|floatformat:"2g" }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% include 'store/_staff_pager.html' %}
+{% else %}
+<div class="empty"><img class="empty-mark" src="{% static 'store/brand/head-dark.png' %}" alt="" width="56" height="57" loading="lazy"><h2>No payments match</h2><p>{% if request.GET %}Change the filters, or clear them to see every payment.{% else %}Payment records appear when a customer starts checkout.{% endif %}</p>{% if request.GET %}<a class="btn btn--ghost" href="{% url 'staff_payments' %}">Clear filters</a>{% endif %}</div>
+{% endif %}
+{% endblock %}

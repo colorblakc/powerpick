@@ -1,0 +1,155 @@
+/* Power Pick Assistant: floating widget over the page.
+   Ink header, mascot avatar, mint live dot, violet customer bubbles, hairline product cards.
+   Pages may set --chat-offset (for example a sticky add-to-cart bar) to lift the widget clear of it. */
+.pp-help {
+  --pp-edge: clamp(.75rem, 2.5vw, 1.5rem);
+  --pp-bottom: calc(var(--pp-edge) + var(--chat-offset, 0px) + env(safe-area-inset-bottom, 0px));
+  --pp-right: calc(var(--pp-edge) + env(safe-area-inset-right, 0px));
+  color: var(--ink-2); font: 400 var(--t-sm)/1.5 var(--f-body);
+}
+.pp-help[hidden], .pp-help [hidden] { display: none !important; }
+.pp-help *, .pp-help *::before, .pp-help *::after { box-sizing: border-box; }
+.pp-help button, .pp-help input { font: inherit; }
+.pp-help .i { width: 1.25rem; height: 1.25rem; }
+.pp-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* Live indicator: mint is reserved for live and online state, so it is used here and nowhere else in the widget. */
+.pp-live { position: relative; display: inline-block; flex: none; width: .5rem; height: .5rem; border-radius: 50%; background: var(--live); }
+.pp-live::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 1px solid var(--live); opacity: 0; animation: pp-ping 2.6s var(--ease) infinite; }
+@keyframes pp-ping { 0% { transform: scale(.55); opacity: .75; } 70%, 100% { transform: scale(1.35); opacity: 0; } }
+
+/* Launcher: the mascot tile plus a label. The live dot sits on the tile's corner. */
+.pp-launch {
+  position: fixed; z-index: 45; right: var(--pp-right); bottom: var(--pp-bottom);
+  display: inline-flex; align-items: center; gap: .65rem; min-height: 3.25rem; padding: .3rem 1.15rem .3rem .3rem;
+  border: 1px solid var(--ink-line); border-radius: 999px; background: var(--ink); color: var(--on-ink);
+  font-weight: 600; letter-spacing: -.005em; cursor: pointer; box-shadow: var(--lift);
+  transition: background var(--fast) var(--ease), transform var(--fast) var(--ease), bottom var(--med) var(--ease);
+}
+.pp-launch:hover { background: var(--ink-line); }
+.pp-launch:active { transform: translateY(1px); }
+.pp-launch:focus-visible, .pp-help .pp-send:focus-visible, .pp-help .pp-icon:focus-visible { outline: 3px solid var(--live); outline-offset: 2px; }
+.pp-face { position: relative; flex: none; display: block; width: 2.5rem; height: 2.5rem; border-radius: 12px; }
+.pp-face > img, .pp-face > svg { display: block; width: 100%; height: 100%; border-radius: 12px; }
+.pp-face .pp-live { position: absolute; top: -.2rem; right: -.2rem; width: .7rem; height: .7rem; border: 2px solid var(--ink); box-sizing: content-box; margin: -2px; }
+.pp-face .pp-live::after { inset: -6px; }
+/* Eyes blink about every six seconds and glance toward the pointer. Motion is off for reduced-motion users. */
+.pp-face .eyes { transform-box: fill-box; transform-origin: 50% 50%; translate: var(--look-x, 0) var(--look-y, 0); transition: translate 220ms var(--ease); animation: pp-blink 6s infinite; }
+@keyframes pp-blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.12); } }
+/* On cart and checkout the primary action is near the corner, so the launcher shrinks to the tile and moves aside. */
+.pp-help.is-compact .pp-launch { padding: .25rem; gap: 0; }
+.pp-help.is-compact .pp-launch-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .pp-launch { padding: .25rem; gap: 0; min-height: 3.25rem; }
+  .pp-launch-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .pp-face { width: 2.75rem; height: 2.75rem; }
+}
+
+/* Panel */
+.pp-panel {
+  position: fixed; z-index: 46; right: var(--pp-right); bottom: var(--pp-bottom);
+  display: flex; flex-direction: column; width: min(25rem, calc(100vw - 2 * var(--pp-edge)));
+  height: min(40rem, calc(100dvh - 2 * var(--pp-edge) - var(--chat-offset, 0px) - 9.5rem)); /* stays below the sticky masthead */
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden;
+  box-shadow: var(--lift); transform-origin: 100% 100%; animation: pp-rise var(--med) var(--ease);
+}
+@keyframes pp-rise { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+
+.pp-head { display: flex; align-items: center; gap: .65rem; padding: .85rem .75rem .85rem 1rem; background: var(--ink); color: var(--on-ink); border-bottom: 1px solid var(--ink-line); }
+/* The same mascot tile is the panel avatar. */
+.pp-mark { flex: none; width: 2.5rem; height: 2.5rem; border-radius: 12px; }
+.pp-head-text { flex: 1; min-width: 0; }
+/* The shop's mark sits on a midnight tile with a hairline edge. */
+.pp-help .pp-head h2 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; color: var(--on-ink); font: 700 var(--t-base)/1.15 var(--f-display); letter-spacing: -.015em; }
+.pp-head p { display: flex; align-items: center; gap: .45rem; max-width: none; margin: .2rem 0 0; font-size: var(--t-xs); line-height: 1.3; color: var(--on-ink-2); }
+.pp-icon { display: grid; place-items: center; flex: none; width: 2.5rem; height: 2.5rem; padding: 0; border: 0; border-radius: var(--r); background: transparent; color: var(--on-ink-2); cursor: pointer; transition: background var(--fast) var(--ease), color var(--fast) var(--ease); }
+.pp-icon:hover { background: var(--ink-line); color: var(--on-ink); }
+
+/* Conversation */
+.pp-log { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: .85rem; padding: 1rem; overflow-y: auto; overscroll-behavior: contain; background: var(--paper); scrollbar-width: thin; scrollbar-color: #A19ABD transparent; }
+.pp-log:focus-visible { outline-offset: -3px; }
+.pp-msg { display: flex; flex-direction: column; align-items: flex-start; gap: .5rem; max-width: 100%; }
+.pp-msg--bot { flex-direction: row; align-items: flex-start; gap: .5rem; }
+.pp-avatar { flex: none; width: 1.75rem; height: 1.75rem; border-radius: 8px; margin-top: .1rem; }
+.pp-msg-body { display: flex; flex-direction: column; align-items: flex-start; gap: .5rem; min-width: 0; flex: 1; }
+.pp-msg--user { align-items: flex-end; }
+.pp-bubble { max-width: 100%; padding: .6rem .85rem; border-radius: 14px 14px 14px 4px; background: var(--wash); color: var(--ink-2); overflow-wrap: anywhere; }
+.pp-msg--user .pp-bubble { max-width: 85%; border-radius: 14px 14px 4px 14px; background: var(--blue); color: #fff; white-space: pre-wrap; }
+.pp-bubble p { margin: 0 0 .5rem; max-width: none; }
+.pp-bubble > :last-child { margin-bottom: 0; }
+.pp-bubble ul, .pp-bubble ol { margin: 0 0 .5rem; padding-left: 1.15rem; }
+.pp-bubble li { margin: 0 0 .2rem; padding-left: .1rem; }
+.pp-bubble li::marker { color: var(--ink-3); }
+.pp-bubble strong { color: var(--ink); font-weight: 650; }
+.pp-bubble a { color: var(--blue); font-weight: 600; }
+.pp-bubble a:hover { color: var(--blue-deep); }
+
+/* Product mini-cards: separate ruled rows under the reply, never nested inside the bubble. */
+.pp-cards { display: grid; gap: .4rem; width: 100%; margin: 0; padding: 0; list-style: none; }
+.pp-card { display: grid; grid-template-columns: 3rem minmax(0, 1fr); gap: .65rem; align-items: center; padding: .5rem; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); color: var(--ink); text-decoration: none; transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease); }
+.pp-card:hover { border-color: var(--blue); background: var(--blue-wash); color: var(--ink); }
+.pp-card-img { width: 3rem; height: 3rem; border-radius: var(--r-sm); background: var(--wash); object-fit: cover; display: grid; place-items: center; color: var(--ink-3); }
+.pp-card-img .i { width: 1.4rem; height: 1.4rem; }
+.pp-card-body { min-width: 0; display: grid; gap: .15rem; }
+.pp-card-name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: .875rem; font-weight: 600; line-height: 1.25; color: var(--ink); }
+.pp-card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .15rem .7rem; font-size: var(--t-xs); }
+.pp-card-price { font: 700 .9375rem/1.2 var(--f-display); letter-spacing: -.01em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.pp-stock { display: inline-flex; align-items: center; gap: .4rem; font-weight: 600; color: var(--ink-2); }
+.pp-stock > span { display: inline-flex; gap: 2px; align-items: flex-end; }
+.pp-stock i { width: 4px; height: .75rem; border-radius: 1px; background: var(--line); }
+.pp-stock--high i { background: var(--ok); }
+.pp-stock--low i:nth-child(-n+2) { background: var(--warn); }
+.pp-stock--last i:nth-child(1) { background: var(--fault); }
+.pp-stock--out { color: var(--fault); }
+
+/* Typing, errors and the retry control */
+.pp-typing { display: inline-flex; align-items: center; gap: .3rem; padding: .85rem .95rem; border-radius: 14px 14px 14px 4px; background: var(--wash); }
+.pp-typing i { width: .4rem; height: .4rem; border-radius: 50%; background: var(--ink-3); animation: pp-dot 1.2s var(--ease) infinite; }
+.pp-typing i:nth-child(2) { animation-delay: .15s; }
+.pp-typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes pp-dot { 0%, 60%, 100% { transform: none; opacity: .45; } 30% { transform: translateY(-3px); opacity: 1; } }
+.pp-bubble--error { background: var(--fault-wash); color: var(--fault); border: 1px solid #F0BDB9; }
+.pp-retry { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.25rem; margin-top: .5rem; padding: .35rem .85rem; border: 1px solid #E6B5B1; border-radius: var(--r); background: var(--paper); color: var(--fault); font-size: var(--t-xs); font-weight: 600; cursor: pointer; }
+.pp-retry:hover { background: var(--fault-wash); border-color: var(--fault); }
+.pp-retry .i { width: 1rem; height: 1rem; }
+
+/* Suggested questions */
+.pp-chips { display: flex; flex-wrap: wrap; gap: .4rem; padding: 0 1rem .75rem; background: var(--paper); }
+.pp-chips button { min-height: 2.25rem; padding: .3rem .8rem; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--blue-deep); font-size: var(--t-xs); font-weight: 600; cursor: pointer; text-align: left; transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease); }
+.pp-chips button:hover { border-color: var(--blue); background: var(--blue-wash); }
+.pp-chips button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+
+/* Composer */
+.pp-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; margin: 0; padding: .65rem .75rem; border-top: 1px solid var(--line); background: var(--sheet); }
+.pp-form input { min-width: 0; min-height: 2.75rem; margin: 0; padding: 0 .85rem; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); color: var(--ink); font-size: 1rem; }
+.pp-form input:focus { outline: 3px solid var(--blue); outline-offset: 0; border-color: var(--blue); }
+.pp-form input:disabled { background: var(--wash); }
+.pp-send { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; padding: 0; border: 1px solid var(--blue); border-radius: var(--r); background: var(--blue); color: #fff; cursor: pointer; transition: background var(--fast) var(--ease); }
+.pp-send:hover { background: var(--blue-deep); border-color: var(--blue-deep); }
+.pp-send[disabled] { background: var(--wash); border-color: var(--line); color: #726B8C; cursor: not-allowed; }
+
+/* Phones: a full-width bottom sheet that respects the notch and the keyboard. */
+@media (max-width: 639.98px) {
+  .pp-panel {
+    right: 0; left: 0; bottom: 0; width: 100%; max-width: none; border-width: 0; border-radius: 0;
+    top: 0; height: var(--pp-sheet-h, 100dvh); margin-bottom: var(--pp-kb, 0px); transform-origin: 50% 100%;
+  }
+  .pp-form { padding-bottom: calc(.65rem + env(safe-area-inset-bottom, 0px)); }
+  .pp-help.is-compact .pp-launch { right: auto; left: var(--pp-right); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pp-panel { animation: none; }
+  .pp-live::after { animation: none; opacity: 0; }
+  .pp-face .eyes { animation: none; transition: none; translate: none; }
+  .pp-typing i { animation: none; opacity: .7; }
+}
+@media (forced-colors: active) { .pp-bubble, .pp-card, .pp-chips button { border: 1px solid CanvasText; } }
+@media print { .pp-help { display: none !important; } }
+
+/* After the first reply the chips become one scrolling row so the conversation keeps its height. */
+.pp-chips.is-slim { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: .65rem; }
+.pp-chips.is-slim button { flex: none; white-space: nowrap; }
+.pp-chips.is-slim::-webkit-scrollbar { display: none; }
+/* The launcher steps aside while a menu or the filter sheet is open. */
+body:has(.shop-menu[open]) .pp-launch, body:has([data-filter-box][open]) .pp-launch { visibility: hidden; }

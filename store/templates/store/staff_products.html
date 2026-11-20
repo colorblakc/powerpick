@@ -1,0 +1,45 @@
+{# Searchable product management list for staff. #}
+{% extends 'store/staff_base.html' %}{% load static %}
+{% block staff_title %}Products{% endblock %}
+{% block heading %}Products{% endblock %}
+{% block sub %}<p>{{ total }} product{{ total|pluralize }} in the catalogue.</p>{% endblock %}
+{% block actions %}<a class="btn btn--sm" href="{% url 'staff_product_new' %}"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Add product</a>{% endblock %}
+
+{% block staff_content %}
+<form class="filters" method="get" role="search" aria-label="Filter products">
+  <div class="f f--grow"><label for="f-q">Search</label><input id="f-q" type="search" name="q" value="{{ request.GET.q }}" placeholder="Name, brand or option" autocomplete="off"></div>
+  <div class="f"><label for="f-cat">Category</label><select id="f-cat" name="category"><option value="">All categories</option>{% for c in categories %}<option value="{{ c.pk }}"{% if request.GET.category == c.pk|stringformat:"s" %} selected{% endif %}>{{ c.name }}</option>{% endfor %}</select></div>
+  <div class="f"><label for="f-state">Availability</label><select id="f-state" name="state"><option value="">All</option><option value="available"{% if request.GET.state == 'available' %} selected{% endif %}>Available in shop</option><option value="hidden"{% if request.GET.state == 'hidden' %} selected{% endif %}>Hidden from shop</option></select></div>
+  <div class="f f--check"><input id="f-low" type="checkbox" name="low" value="1"{% if request.GET.low %} checked{% endif %}><label for="f-low">Low stock (5 or fewer)</label></div>
+  <div class="filters-end"><button class="btn btn--sm" type="submit">Apply</button>{% if request.GET.q or request.GET.category or request.GET.state or request.GET.low %}<a class="btn btn--ghost btn--sm" href="{% url 'staff_products' %}">Clear</a>{% endif %}</div>
+</form>
+
+<div class="result-line"><span>{{ page.paginator.count }} result{{ page.paginator.count|pluralize }}</span></div>
+{% if page %}
+<div class="tbl-wrap"><table class="tbl tbl--dense tbl--stack">
+  <thead><tr><th scope="col">Product</th><th scope="col">Brand</th><th scope="col">Category</th><th scope="col" class="num">Price</th><th scope="col">Stock</th><th scope="col">In shop</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+  <tbody>
+  {% for product in page %}
+    <tr{% if not product.available %} class="is-muted"{% endif %}>
+      <td class="span"><div class="cell-prod"><span class="thumb">{% if product.image %}<img src="{{ product.image.url }}" alt="" width="40" height="40" loading="lazy">{% else %}<svg class="i" aria-hidden="true"><use href="#i-box-open"/></svg>{% endif %}</span>
+        <span><a class="name" href="{% url 'staff_product_edit' product.pk %}">{{ product.name }}</a>{% if product.variant_group %}<span class="sub">Option: {{ product.variant_label }}</span>{% endif %}</span></div></td>
+      <td data-label="Brand">{{ product.brand }}</td>
+      <td data-label="Category">{{ product.category.name }}</td>
+      <td data-label="Price" class="num">₹{{ product.price|floatformat:"2g" }}</td>
+      <td data-label="Stock">{% include 'store/_staff_stock.html' %}</td>
+      <td data-label="In shop"><form method="post" action="{% url 'staff_product_toggle' product.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button class="switch" type="submit" role="switch" aria-checked="{% if product.available %}true{% else %}false{% endif %}" aria-label="{{ product.name }} is {% if product.available %}available. Hide it from the shop{% else %}hidden. Make it available{% endif %}"><span class="track" aria-hidden="true"></span>{% if product.available %}Available{% else %}Hidden{% endif %}</button></form></td>
+      <td class="actions">
+        <a class="icon-act" href="{% url 'staff_product_edit' product.pk %}" aria-label="Edit {{ product.name }}" title="Edit"><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg></a>
+        <form method="post" action="{% url 'staff_product_delete' product.pk %}" data-confirm="Delete {{ product.name }}? If it is on past orders it is hidden from the shop instead.">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button class="icon-act icon-act--danger" type="submit" aria-label="Delete {{ product.name }}" title="Delete"><svg class="i" aria-hidden="true"><use href="#i-trash"/></svg></button></form>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% include 'store/_staff_pager.html' %}
+{% else %}
+<div class="empty"><img class="empty-mark" src="{% static 'store/brand/head-dark.png' %}" alt="" width="56" height="57" loading="lazy"><h2>No products match</h2><p>Try a shorter search or clear the filters.</p><a class="btn btn--ghost" href="{% url 'staff_products' %}">Clear filters</a></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,135 @@
+/* Django admin themed to Power Pick's Afterglow brand. */
+html[data-theme], :root {
+  --primary: #5B3DF5; --secondary: #0D0B2E; --accent: #2FDDA6; --primary-fg: #fff;
+  --header-bg: #0D0B2E; --header-color: #F2F3F5; --header-branding-color: #fff; --header-link-color: #F2F3F5;
+  --breadcrumbs-bg: #1B1846; --breadcrumbs-fg: #B5B8DA; --breadcrumbs-link-fg: #fff;
+  --link-fg: #5B3DF5; --link-hover-color: #4B28D4; --link-selected-fg: #4B28D4;
+  --button-bg: #5B3DF5; --button-hover-bg: #4B28D4; --default-button-bg: #0D0B2E; --default-button-hover-bg: #2A2B57;
+  --selected-bg: #EFEBFF; --selected-row: #F6F5FC; --body-bg: #F6F5FC; --darkened-bg: #EEEDF8; --border-color: #DCDAEC;
+  --font-family-primary: "Figtree", system-ui, sans-serif;
+}
+html[data-theme="dark"] { --body-bg: #0D0B2E; --darkened-bg: #16133D; --selected-bg: #241F5C; --selected-row: #1B1846; --border-color: #2A2B57; --link-fg: #B6A8FF; }
+body { font-family: var(--font-family-primary); }
+#header { padding: 14px 28px; }
+.pp-admin-brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; }
+.pp-admin-brand span { font: 700 15px/1 "Bricolage Grotesque", system-ui; color: #B5B8DA; letter-spacing: -.01em; }
+h1, h2, #site-name { font-family: "Bricolage Grotesque", system-ui, sans-serif; letter-spacing: -.02em; }
+.module, .inline-group, fieldset.module { border-radius: 16px; overflow: hidden; border: 1px solid var(--border-color); }
+.module h2, .module caption { background: #0D0B2E; color: #fff; padding: 12px 16px; font-size: 14px; }
+.button, input[type=submit], input[type=button], .submit-row input, a.button { border-radius: 999px !important; padding: 10px 18px !important; }
+input[type=text], input[type=password], input[type=email], input[type=number], textarea, select { border-radius: 10px; }
+body.login { background: radial-gradient(120% 80% at 50% 110%, #B79CFF 0%, #5B3DF5 30%, #140C4F 65%, #060520 100%); min-height: 100vh; }
+body.login #container { border-radius: 24px; overflow: hidden; border: 0; box-shadow: 0 30px 60px -30px rgb(0 0 0 / .6); }
+body.login #header { justify-content: center; }
+body.login .submit-row input { width: 100%; }
+
+/* ---- Header, content area, buttons and form controls ---- */
+#header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 20px; padding: 14px 28px; }
+#header #branding { flex: none; }
+#user-tools { margin: 0; padding: 0; font-size: 13px; text-transform: none; letter-spacing: 0; color: #B5B8DA; line-height: 2.2; text-align: right; }
+#user-tools a { display: inline-block; border-bottom: 0; color: #fff; text-decoration: none; font-weight: 600; }
+#user-tools a:hover { color: var(--accent); text-decoration: underline; }
+#user-tools button { padding: 0; color: #fff; font: inherit; font-weight: 600; text-transform: none; background: none; border: 0; cursor: pointer; }
+#user-tools button:hover { color: var(--accent); text-decoration: underline; }
+.theme-toggle { min-width: 32px; min-height: 32px; }
+div.breadcrumbs { padding: 12px 28px; font-size: 14px; text-transform: none; letter-spacing: 0; }
+div.breadcrumbs a { color: #fff; }
+#content { padding: 24px 28px 48px; }
+#content h1, .main > #content-main h1, #content > h1 { margin: 0 0 20px; font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.25rem); line-height: 1.1; letter-spacing: -.03em; color: var(--secondary); }
+#content h2 { font-size: 1.15rem; margin: 24px 0 12px; color: var(--secondary); }
+.module { margin-bottom: 24px; background: var(--paper, #fff); box-shadow: 0 1px 2px rgb(13 11 46 / .04); }
+.module h2, .module caption, .inline-group h2 { margin: 0; padding: 14px 18px; font: 700 14px/1.2 "Bricolage Grotesque", system-ui, sans-serif; letter-spacing: 0; text-transform: none; background: #0D0B2E; color: #fff; }
+.module h2 a, .module caption a { color: #fff; }
+.module td, .module th { padding: 10px 18px; }
+#content-related { background: transparent; border: 0; }
+#content-related .module { background: var(--paper, #fff); }
+#recent-actions-module h2, #content-related h2 { font-size: 14px; }
+#content-related h3 { margin: 0; padding: 14px 18px 4px; font: 700 18px/1.2 "Bricolage Grotesque", system-ui; color: var(--secondary); text-transform: none; }
+.actionlist { padding: 0 18px 14px; }
+.addlink, .changelink, .object-tools a { text-decoration: none; }
+.object-tools { float: none; display: flex; justify-content: flex-end; margin: 0 0 16px; padding: 0; }
+.object-tools li { float: none; margin: 0; }
+.object-tools a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 18px; border-radius: 999px; background: var(--primary) !important; color: #fff; font-weight: 600; text-transform: none; letter-spacing: 0; }
+.object-tools a:hover { background: var(--link-hover-color) !important; }
+.object-tools a.addlink::after { margin-left: 8px; }
+.button, input[type=submit], input[type=button], .submit-row input, a.button { min-height: 40px; background: var(--primary); color: #fff; border: 0; font-weight: 600; cursor: pointer; }
+.button:hover, input[type=submit]:hover, input[type=button]:hover { background: var(--link-hover-color); }
+.button.default, input[type=submit].default, .submit-row input.default { background: var(--primary); }
+.submit-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 14px 18px; border-radius: 16px; background: var(--darkened-bg); border: 0; }
+.submit-row input, .submit-row a.deletelink, .submit-row .deletelink-box a { float: none; margin: 0; }
+.submit-row a.deletelink { display: inline-flex; align-items: center; min-height: 40px; padding: 0 18px; border-radius: 999px; background: #B32623; color: #fff; text-transform: none; font-weight: 600; }
+.submit-row .deletelink-box { margin-left: auto; }
+input[type=text], input[type=password], input[type=email], input[type=number], input[type=url], input[type=date], input[type=time], textarea, select { min-height: 40px; padding: 8px 12px; border: 1px solid var(--border-color); background: var(--paper, #fff); color: var(--secondary); max-width: 100%; box-sizing: border-box; }
+textarea { min-height: 96px; }
+input:focus, textarea:focus, select:focus { outline: 3px solid rgb(91 61 245 / .3); outline-offset: 0; border-color: var(--primary); }
+/* Changelist toolbar and results */
+#toolbar { padding: 14px 18px; background: var(--darkened-bg); border-bottom: 1px solid var(--border-color); }
+#changelist-search > div { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; width: 100%; }
+#changelist-search label { display: inline-flex; align-items: center; margin: 0; color: var(--secondary); }
+#changelist-search input[type=text] { flex: 1 1 14rem; min-width: 0; margin: 0; }
+#changelist-search input[type=submit] { margin: 0; }
+#changelist .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 18px; background: var(--body-bg); border-bottom: 1px solid var(--border-color); font-size: 14px; }
+#changelist .actions label { display: inline-flex; align-items: center; gap: 8px; margin: 0; }
+#changelist .actions select { min-width: 12rem; }
+#changelist .actions .button { margin: 0; }
+#changelist-filter { border-radius: 0; border: 0; border-left: 1px solid var(--border-color); background: var(--body-bg); }
+#changelist-filter h2 { border-radius: 0; margin: 0; color: #fff; background: #0D0B2E; }
+#changelist-filter h3 { margin: 16px 0 6px; font: 700 14px/1.2 "Bricolage Grotesque", system-ui; color: var(--secondary); }
+#changelist-filter li a { display: block; padding: 6px 0; }
+#changelist table { width: 100%; }
+#changelist thead th { padding: 10px 18px; background: var(--darkened-bg); font-size: 12px; text-transform: none; letter-spacing: 0; }
+#changelist thead th a { color: var(--secondary); }
+#changelist tbody td, #changelist tbody th { padding: 12px 18px; vertical-align: middle; }
+#changelist .paginator { padding: 12px 18px; border: 0; background: var(--body-bg); }
+.results { overflow-x: auto; }
+/* Forms */
+fieldset.module { margin-bottom: 20px; }
+fieldset.module h2 { border-radius: 0; }
+.form-row { padding: 14px 18px; }
+.form-row label { color: var(--secondary); font-weight: 600; }
+.help, .form-row .help { color: var(--ink-3, #535460); font-size: 13px; }
+.errornote, ul.errorlist { border-radius: 12px; }
+ul.messagelist li { margin: 0; padding: 14px 28px 14px 64px; background-position: 30px 16px; background-color: var(--selected-bg); color: var(--secondary); font-size: 14px; }
+ul.messagelist li.warning, ul.messagelist li.error { background-color: #FFF3D6; }
+.paginator a:link, .paginator a:visited { background: var(--primary); border-radius: 999px; }
+body.login #container { max-width: 400px; width: calc(100% - 32px); margin: 8vh auto 0; }
+@media (max-width: 767px) {
+  #header { padding: 12px 16px; }
+  #user-tools { text-align: left; line-height: 2.6; }
+  ul.messagelist li { padding-inline: 52px 16px; background-position: 18px 16px; }
+  div.breadcrumbs { padding: 10px 16px; }
+  #content { padding: 16px 16px 40px; }
+  #changelist .actions select { min-width: 0; flex: 1 1 10rem; }
+  #changelist-filter { border-left: 0; border-top: 1px solid var(--border-color); }
+  .object-tools a { min-height: 44px; }
+  .submit-row { padding: 12px; }
+  .submit-row input { flex: 1 1 8rem; min-height: 44px; }
+  .submit-row .deletelink-box { margin-left: 0; width: 100%; }
+  .button, input[type=submit] { min-height: 44px; }
+}
+.object-tools { float: none !important; margin: 0 0 16px !important; display: flex !important; justify-content: flex-end; }
+.object-tools li { float: none !important; margin: 0 !important; }
+.object-tools a { line-height: 1; padding-block: 0; }
+fieldset.module > h2, fieldset.module h2, .module h2 { color: #fff !important; }
+.selector-available h2, .selector-chosen h2 { margin: 0; padding: 12px 16px; font-size: 14px; color: #fff !important; }
+.selector-available h2 { background: #2A2B57; }
+.selector-chosen h2 { background: var(--primary); }
+@media (max-width: 767px) {
+  .submit-row { flex-direction: column; align-items: stretch; }
+  .submit-row input, .submit-row a.deletelink { flex: none !important; width: 100%; height: auto; box-sizing: border-box; justify-content: center; }
+}
+.object-tools a { float: none !important; margin: 0 !important; position: static !important; }
+.object-tools { overflow: visible !important; }
+fieldset.module { padding: 0; margin: 0 0 20px; }
+fieldset.module > h2 { border-radius: 0; }
+.selector .selector-available h2 { background: #2A2B57 !important; color: #fff !important; }
+.selector .selector-chosen h2 { background: var(--primary) !important; color: #fff !important; }
+.selector h2 { margin: 0; }
+.object-tools li { height: auto !important; }
+#content .module h2, #content fieldset.module h2, #content .inline-group h2 { margin: 0; }
+#content-related .module h2 { margin: 0; }
+#content-related .module h2 { background: #0D0B2E; }
+#recent-actions-module { padding-bottom: 16px; }
+#recent-actions-module h3 { padding-inline: 18px; }
+#recent-actions-module ul.actionlist { padding: 0 18px; }
+#recent-actions-module p { padding: 0 18px; margin: 0; }

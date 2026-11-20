@@ -1,0 +1,29 @@
+{% load static %}{# One order in a list. Include with order=order, payments=True to show payment details instead of items. #}
+<article class="orow">
+  <div class="orow-id">
+    <h3><a href="{% url 'order_detail' order.pk %}">Order #{{ order.pk }}</a></h3>
+    <p class="muted xs">{{ order.created|date:"j M Y" }}</p>
+  </div>
+  {% if payments %}
+  <dl class="orow-pay">
+    <div><dt class="cell-label">Method</dt><dd class="paymethod">{% if order.payment.method == 'Razorpay' %}<img class="pay-logo" src="{% static 'store/pay/razorpay-default.svg' %}" alt="" width="18" height="18">{% endif %}{{ order.payment.method }}</dd></div>
+    <div><dt class="cell-label">Gateway reference</dt><dd class="mono">{% if order.payment.reference %}{{ order.payment.reference }}{% else %}<span class="muted">None yet</span>{% endif %}</dd></div>
+  </dl>
+  {% else %}
+  <div class="orow-items">
+    <ul class="thumbs" aria-hidden="true">
+      {% for item in order.item_preview %}<li>{% if item.product and item.product.image %}<img src="{{ item.product.image.url }}" alt="" width="44" height="44" loading="lazy">{% else %}<svg class="i" aria-hidden="true"><use href="#i-box-open"/></svg>{% endif %}</li>{% endfor %}
+      {% if order.item_more %}<li class="more">+{{ order.item_more }}</li>{% endif %}
+    </ul>
+    <p class="small">{% for item in order.item_preview %}{{ item.name }} <span class="muted">&times; {{ item.quantity }}</span>{% if not forloop.last %}, {% endif %}{% endfor %}{% if order.item_more %} <span class="muted">and {{ order.item_more }} more</span>{% endif %}</p>
+  </div>
+  {% endif %}
+  <div class="orow-total price">₹{{ order.total|floatformat:"2g" }}</div>
+  <div class="orow-tags">
+    <span class="tag{% if order.status_tone %} tag--{{ order.status_tone }}{% endif %}">{{ order.status }}</span>
+    {% if order.payment %}<span class="tag{% if order.pay_tone %} tag--{{ order.pay_tone }}{% endif %}">{{ order.payment.status }}</span>{% endif %}
+  </div>
+  <div class="orow-act">
+    {% if order.status == 'Pending' and order.payment.status != 'Paid' and order.payment.method == 'Razorpay' %}<a class="btn btn--sm" href="{% url 'gateway_page' order.pk %}">{% if order.payment.status == 'Failed' %}Retry payment{% else %}Complete payment{% endif %}</a>{% else %}<a class="btn btn--sm btn--ghost" href="{% url 'order_detail' order.pk %}">View order<span class="sr-only"> {{ order.pk }}</span></a>{% endif %}
+  </div>
+</article>

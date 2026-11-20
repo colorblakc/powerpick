@@ -1,0 +1,35 @@
+{# Searchable list of customer accounts for staff. #}
+{% extends 'store/staff_base.html' %}{% load static %}
+{% block staff_title %}Customers{% endblock %}
+{% block heading %}Customers{% endblock %}
+{% block sub %}<p>{{ total }} customer account{{ total|pluralize }}. Staff accounts are not listed here.</p>{% endblock %}
+
+{% block staff_content %}
+<form class="filters" method="get" role="search" aria-label="Search customers">
+  <div class="f f--grow"><label for="f-q">Name, username or email</label><input id="f-q" type="search" name="q" value="{{ request.GET.q }}" autocomplete="off"></div>
+  <div class="f"><label for="f-state">Account</label><select id="f-state" name="state"><option value="">All</option><option value="active"{% if request.GET.state == 'active' %} selected{% endif %}>Active</option><option value="deactivated"{% if request.GET.state == 'deactivated' %} selected{% endif %}>Deactivated</option></select></div>
+  <div class="filters-end"><button class="btn btn--sm" type="submit">Apply</button>{% if request.GET.q or request.GET.state %}<a class="btn btn--ghost btn--sm" href="{% url 'staff_customers' %}">Clear</a>{% endif %}</div>
+</form>
+<div class="result-line"><span>{{ page.paginator.count }} result{{ page.paginator.count|pluralize }}</span></div>
+{% if page %}
+<div class="tbl-wrap"><table class="tbl tbl--dense tbl--stack">
+  <thead><tr><th scope="col">Customer</th><th scope="col">Email</th><th scope="col">Joined</th><th scope="col">Last sign-in</th><th scope="col" class="num">Orders</th><th scope="col" class="num">Paid total</th><th scope="col">Account</th></tr></thead>
+  <tbody>
+  {% for person in page %}
+    <tr{% if not person.is_active %} class="is-muted"{% endif %}>
+      <td class="span"><a class="name" href="{% url 'staff_customer' person.pk %}">{{ person.get_full_name|default:person.username }}</a>{% if person.get_full_name %}<span class="sub">{{ person.username }}</span>{% endif %}</td>
+      <td data-label="Email">{{ person.email|default:"Not given" }}</td>
+      <td data-label="Joined" class="nowrap">{{ person.date_joined|date:"j M Y" }}</td>
+      <td data-label="Last sign-in" class="nowrap">{{ person.last_login|date:"j M Y"|default:"Never" }}</td>
+      <td data-label="Orders" class="num">{{ person.order_count }}</td>
+      <td data-label="Paid total" class="num">₹{{ person.paid_total|default:0|floatformat:"2g" }}</td>
+      <td data-label="Account">{% if person.is_active %}<span class="tag tag--ok">Active</span>{% else %}<span class="tag tag--fault">Deactivated</span>{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% include 'store/_staff_pager.html' %}
+{% else %}
+<div class="empty"><img class="empty-mark" src="{% static 'store/brand/head-dark.png' %}" alt="" width="56" height="57" loading="lazy"><h2>No customers match</h2><p>{% if request.GET %}Try a different name or email, or clear the filters.{% else %}Customers appear here once they register.{% endif %}</p>{% if request.GET %}<a class="btn btn--ghost" href="{% url 'staff_customers' %}">Clear filters</a>{% endif %}</div>
+{% endif %}
+{% endblock %}

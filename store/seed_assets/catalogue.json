@@ -1,0 +1,110 @@
+{
+  "pliers": {
+    "category": "Electrical Tools",
+    "description": "A serrated jaw and side cutter share one tool for gripping, bending and trimming wire. The dipped handles offer a comfortable grip.",
+    "variants": [
+      ["Combination Pliers · 180 mm", "Fieldcraft", 395, 18, "Length: 180 mm\nJaws: serrated steel\nGrip: dipped handles"],
+      ["Compact Combination Pliers · 150 mm", "Fieldcraft", 325, 8, "Length: 150 mm\nJaws: serrated steel\nGrip: dipped handles"],
+      ["Long Handle Combination Pliers · 200 mm", "Benchline", 510, 12, "Length: 200 mm\nJaws: serrated steel\nGrip: dipped handles"],
+      ["Heavy Duty Combination Pliers · 220 mm", "Benchline", 595, 6, "Length: 220 mm\nJaws: serrated steel\nGrip: dipped handles"]
+    ]
+  },
+  "meter": {
+    "category": "Testers and Measuring Tools",
+    "description": "A handheld meter with a rotary selector, a digital display and a pair of test leads. Compare the measurement functions before choosing a model.",
+    "variants": [
+      ["Pocket Digital Multimeter", "Voltmark", 795, 9, "Display: 2000 counts\nRange: manual\nMeasures: DC voltage, resistance and continuity"],
+      ["Auto Range Digital Multimeter", "Voltmark", 1450, 11, "Display: 4000 counts\nRange: automatic\nMeasures: AC/DC voltage, resistance and continuity"],
+      ["True RMS Digital Multimeter", "Gridwell", 2390, 5, "Display: 6000 counts\nRange: automatic\nFeatures: true RMS AC measurement and data hold"],
+      ["Bench Digital Multimeter Kit", "Gridwell", 1880, 4, "Display: 4000 counts\nRange: automatic\nIncluded: meter, test leads and carrying pouch"]
+    ]
+  },
+  "cable": {
+    "category": "Wires and Cables",
+    "description": "A flexible single-core copper conductor in red PVC insulation. Check the cross-sectional area and coil length against your project requirements.",
+    "variants": [
+      ["Copper House Wire · 1.5 mm²", "Lineworks", 1290, 26, "Conductor: stranded copper\nCross-section: 1.5 mm²\nCoil: 90 m\nColour: red"],
+      ["Copper House Wire · 1 mm²", "Lineworks", 890, 16, "Conductor: stranded copper\nCross-section: 1 mm²\nCoil: 90 m\nColour: red"],
+      ["Copper House Wire · 2.5 mm²", "Gridwell", 2095, 7, "Conductor: stranded copper\nCross-section: 2.5 mm²\nCoil: 90 m\nColour: red"],
+      ["Copper House Wire · 4 mm²", "Gridwell", 3250, 0, "Conductor: stranded copper\nCross-section: 4 mm²\nCoil: 90 m\nColour: red"]
+    ]
+  },
+  "breaker": {
+    "category": "MCBs and Circuit Protection",
+    "description": "A single-pole miniature circuit breaker with a toggle switch and DIN-rail mounting. The listed current and trip curve distinguish each option.",
+    "variants": [
+      ["Single Pole MCB · 16 A", "Gridwell", 245, 30, "Rated current: 16 A\nPoles: 1\nTrip curve: C\nMount: DIN rail"],
+      ["Single Pole MCB · 6 A", "Voltmark", 215, 22, "Rated current: 6 A\nPoles: 1\nTrip curve: B\nMount: DIN rail"],
+      ["Single Pole MCB · 10 A", "Gridwell", 230, 24, "Rated current: 10 A\nPoles: 1\nTrip curve: C\nMount: DIN rail"],
+      ["Single Pole MCB · 32 A", "Voltmark", 295, 10, "Rated current: 32 A\nPoles: 1\nTrip curve: C\nMount: DIN rail"]
+    ]
+  },
+  "switch": {
+    "category": "Switches and Sockets",
+    "description": "A clean white rocker insert for a modular wall plate. Match the module series, switching arrangement and current rating before ordering.",
+    "variants": [
+      ["One Way Rocker Switch · 6 A", "Plane", 65, 80, "Format: one module\nCurrent: 6 A\nSwitching: one way\nSeries: Plane M"],
+      ["Two Way Rocker Switch · 6 A", "Plane", 95, 48, "Format: one module\nCurrent: 6 A\nSwitching: two way\nSeries: Plane M"],
+      ["One Way Rocker Switch · 16 A", "Plane", 145, 32, "Format: one module\nCurrent: 16 A\nSwitching: one way\nSeries: Plane M"],
+      ["Two Way Rocker Switch · 16 A", "Plane", 185, 21, "Format: one module\nCurrent: 16 A\nSwitching: two way\nSeries: Plane M"]
+    ]
+  },
+  "bulb": {
+    "category": "LED Lighting",
+    "description": "A frosted LED bulb with a B22 bayonet base. Use the lumen output and colour temperature to compare brightness and appearance.",
+    "variants": [
+      ["LED Bayonet Bulb · 9 W", "Luma", 105, 64, "Power: 9 W\nBase: B22\nOutput: 810 lm\nColour temperature: 4000 K"],
+      ["Warm White LED Bulb · 7 W", "Luma", 89, 42, "Power: 7 W\nBase: B22\nOutput: 630 lm\nColour temperature: 3000 K"],
+      ["Daylight LED Bulb · 12 W", "Luma", 155, 28, "Power: 12 W\nBase: B22\nOutput: 1080 lm\nColour temperature: 6500 K"],
+      ["Neutral White LED Bulb · 15 W", "Lineworks", 205, 19, "Power: 15 W\nBase: B22\nOutput: 1350 lm\nColour temperature: 4000 K"]
+    ]
+  },
+  "board": {
+    "category": "Modular Boards",
+    "description": "A surface-mount enclosure and matching faceplate for Plane M-series modular inserts. The module count describes the usable space in the plate.",
+    "variants": [
+      ["Modular Surface Box · 4 Module", "Plane", 165, 36, "Capacity: 4 modules\nMount: surface\nColour: white\nSeries: Plane M"],
+      ["Modular Surface Box · 2 Module", "Plane", 110, 28, "Capacity: 2 modules\nMount: surface\nColour: white\nSeries: Plane M"],
+      ["Modular Surface Box · 6 Module", "Plane", 225, 16, "Capacity: 6 modules\nMount: surface\nColour: white\nSeries: Plane M"],
+      ["Modular Surface Box · 8 Module", "Plane", 285, 0, "Capacity: 8 modules\nMount: surface\nColour: white\nSeries: Plane M"]
+    ]
+  },
+  "tape": {
+    "category": "Insulation and Accessories",
+    "description": "A flexible roll of black PVC electrical insulation tape. Choose a width and length to suit the quantity and coverage required.",
+    "variants": [
+      ["PVC Electrical Tape · 18 mm", "Fieldcraft", 32, 120, "Width: 18 mm\nRoll length: 9 m\nColour: black\nMaterial: PVC"],
+      ["Narrow Electrical Tape · 12 mm", "Benchline", 24, 60, "Width: 12 mm\nRoll length: 9 m\nColour: black\nMaterial: PVC"],
+      ["Long Roll Electrical Tape · 18 mm", "Fieldcraft", 58, 45, "Width: 18 mm\nRoll length: 18 m\nColour: black\nMaterial: PVC"],
+      ["Wide Electrical Tape · 25 mm", "Benchline", 75, 38, "Width: 25 mm\nRoll length: 18 m\nColour: black\nMaterial: PVC"]
+    ]
+  },
+  "drill": {
+    "category": "Electrical Tools",
+    "description": "A compact variable-speed cordless drill driver with a keyless chuck. Includes a rechargeable battery and compatible charger for general drilling and screwdriving work.",
+    "variants": [
+      ["Cordless Drill Driver · 12 V", "Fieldcraft", 3490, 8, "Battery: 12 V, 2 Ah\nChuck: 10 mm keyless\nSpeed: two ranges\nIncludes: drill, battery and charger"]
+    ]
+  },
+  "socket": {
+    "category": "Switches and Sockets",
+    "description": "A white three-pin socket insert for a Plane M-series modular frame. Check the module space and plug pattern before selecting a socket.",
+    "variants": [
+      ["Three Pin Modular Socket · 6 A", "Plane", 120, 26, "Format: two modules\nCurrent: 6 A\nPin pattern: three round pins\nSeries: Plane M"]
+    ]
+  },
+  "driver": {
+    "category": "Electrical Tools",
+    "description": "A slotted steel screwdriver with a shaped handle. Match the tip width with the screw head for a comfortable fit.",
+    "variants": [
+      ["Slotted Screwdriver · 5 mm", "Benchline", 165, 20, "Tip: 5 mm slotted\nShaft: 100 mm\nHandle: molded grip"]
+    ]
+  },
+  "strip": {
+    "category": "LED Lighting",
+    "description": "A flexible reel of warm-white LED tape for indoor accent lighting. The strip needs a compatible constant-voltage power supply, sold separately.",
+    "variants": [
+      ["Warm White LED Strip · 5 m", "Luma", 395, 15, "Length: 5 m\nInput: 12 V DC\nPower: 4.8 W/m\nColour temperature: 3000 K\nPower supply: excluded"]
+    ]
+  }
+}

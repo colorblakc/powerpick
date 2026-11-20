@@ -1,0 +1,84 @@
+{# Customer profile with avatar, personal details, delivery details and recent orders. #}
+{% extends "store/base.html" %}
+{% load static %}
+{% block title %}My profile · Power Pick{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'store/account.css' %}"><link rel="stylesheet" href="{% static 'store/address.css' %}">{% endblock %}
+{% block content %}
+{% url 'wishlist' as wishlist_url %}
+<div class="wrap acct">
+  <header class="acct-head acct-head--profile">
+    <div class="acct-id">
+      {% if saved.avatar_filename %}<img class="acct-badge avatar-current" src="{% static saved.avatar_filename %}" alt="Your profile picture" width="56" height="56">{% else %}<img class="acct-badge" src="{% static 'store/brand/badge.webp' %}" alt="" width="56" height="56">{% endif %}
+      <div>
+        <h1>{{ user.get_full_name|default:user.username }}</h1>
+        <p class="muted">{% if user.is_staff %}Staff account{% else %}Customer account{% endif %} &middot; {{ user.username }}</p>
+      </div>
+    </div>
+    <dl class="titleblock acct-counts">
+      <div><dt class="cell-label">Orders</dt><dd><a href="{% url 'orders' %}">{{ order_count }}</a></dd></div>
+      <div><dt class="cell-label">Wishlist</dt><dd>{% if wishlist_url %}<a href="{{ wishlist_url }}">{{ wishlist_count }}</a>{% else %}{{ wishlist_count }}{% endif %}</dd></div>
+      <div><dt class="cell-label">Member since</dt><dd>{{ member_since|date:"M Y" }}</dd></div>
+    </dl>
+  </header>
+  {% include 'store/_account_nav.html' with current='profile' %}
+  {% if user.is_staff %}<p class="notice notice--blue"><svg class="i" aria-hidden="true"><use href="#i-shield"/></svg><span>This is a staff account. <a href="{% url 'dashboard' %}">Open the staff workspace</a>.</span></p>{% endif %}
+  <nav class="jump" aria-label="On this page"><a href="#avatar">Profile picture</a><a href="#details">Personal details</a><a href="#delivery">Delivery details</a><a href="#password">Password</a><a href="#recent">Recent orders</a></nav>
+
+  <section class="acct-sec" id="avatar" aria-labelledby="avatar-heading">
+    <div class="acct-sec-head"><h2 id="avatar-heading">Profile picture</h2><p>Choose a picture for your account. You can change it any time.</p></div>
+    <form class="panel" action="{% url 'update_avatar' %}" method="post">
+      {% csrf_token %}
+      <fieldset class="avatar-picker"><legend>Choose a profile picture</legend><div class="avatar-options">
+      {% for avatar in avatar_choices %}<label class="avatar-option"><input type="radio" name="avatar" value="{{ avatar.value }}" {% if saved.avatar == avatar.value %}checked{% endif %} required><img src="{% static avatar.path %}" alt="" width="72" height="72"><span class="avatar-label">{{ avatar.label }}</span></label>{% endfor %}
+      </div></fieldset><button type="submit" class="btn" data-busy>Save picture</button>
+    </form>
+  </section>
+
+  <section class="acct-sec" id="details" aria-labelledby="details-h">
+    <div class="acct-sec-head"><h2 id="details-h">Personal details</h2><p>The name and email on your account.</p></div>
+    <div class="panel">
+      {% if person.is_bound and person.errors %}{% include 'store/_account_errors.html' with form=person title="Personal details were not saved." %}{% endif %}
+      <form method="post" action="{% url 'profile' %}#details" class="auth-fields" novalidate>
+        {% csrf_token %}<input type="hidden" name="section" value="person">
+        <div class="two">
+          {% include 'store/_account_field.html' with field=person.first_name %}
+          {% include 'store/_account_field.html' with field=person.last_name %}
+        </div>
+        {% include 'store/_account_field.html' with field=person.email %}
+        <button type="submit" class="btn" data-busy>Save personal details</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="acct-sec" id="delivery" aria-labelledby="delivery-h">
+    <div class="acct-sec-head"><h2 id="delivery-h">Delivery details</h2><p>This address and phone number are filled in for you at checkout. You can still change them for a single order.</p></div>
+    <div class="panel">
+      {% if not saved.address and not saved.phone and not delivery.is_bound %}<p class="notice notice--warn"><svg class="i" aria-hidden="true"><use href="#i-map-pin"/></svg><span>No delivery details saved yet. Add them here and checkout will start with them filled in.</span></p>{% endif %}
+      {% if delivery.is_bound and delivery.errors %}{% include 'store/_account_errors.html' with form=delivery title="Delivery details were not saved." %}{% endif %}
+      <form method="post" action="{% url 'profile' %}#delivery" class="auth-fields" novalidate>
+        {% csrf_token %}<input type="hidden" name="section" value="delivery">
+        {% include 'store/_address_fields.html' with form=delivery %}
+        <button type="submit" class="btn" data-busy>Save delivery details</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="acct-sec" id="password" aria-labelledby="password-h">
+    <div class="acct-sec-head"><h2 id="password-h">Password</h2><p>Change the password you use to sign in.</p></div>
+    <div class="panel row"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg><p class="muted">Pick something you do not use anywhere else.</p><a class="btn btn--ghost" href="{% url 'password_change' %}">Change password</a></div>
+  </section>
+
+  <section class="acct-sec" id="recent" aria-labelledby="recent-h">
+    <div class="acct-sec-head"><h2 id="recent-h">Recent orders</h2><p>Your latest three orders.</p></div>
+    <div>
+      {% if recent %}
+      <div class="olist">{% for order in recent %}{% include 'store/_order_row.html' %}{% endfor %}</div>
+      <p class="more-link"><a href="{% url 'orders' %}">View all orders<svg class="i i--sm" aria-hidden="true"><use href="#i-arrow-right"/></svg></a></p>
+      {% else %}
+      <div class="empty"><svg class="i" aria-hidden="true"><use href="#i-package"/></svg><h3>No orders yet</h3><p>Your orders will appear here with their status.</p><a class="btn" href="{% url 'catalogue' %}">Shop the catalogue</a></div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'store/account.js' %}" defer></script>{% endblock %}

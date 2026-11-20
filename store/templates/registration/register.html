@@ -1,0 +1,30 @@
+{# Registration form; server validation handles account details and passwords. #}
+{% extends "store/_auth_shell.html" %}
+{% block title %}Create an account · Power Pick{% endblock %}
+{% block meta_description %}Create a Power Pick account to track orders, save delivery details and keep a wishlist.{% endblock %}
+{% block ink_title %}Set up once, reorder in a click.{% endblock %}
+{% block form_side %}
+<h1 id="auth-title">Create an account</h1>
+<p class="lede">Customer accounts only. You can add your delivery details in the next step.</p>
+{% include 'store/_account_errors.html' with form=form title="Fix these and create your account." %}
+<form method="post" class="auth-fields" novalidate data-password-form>
+  {% csrf_token %}
+  <div class="two">
+    {% include 'store/_account_field.html' with field=form.first_name %}
+    {% include 'store/_account_field.html' with field=form.last_name %}
+  </div>
+  {% include 'store/_account_field.html' with field=form.email %}
+  {% include 'store/_account_field.html' with field=form.username %}
+  {% include 'store/_account_field.html' with field=form.password1 password=True %}
+  {% include 'store/_account_field.html' with field=form.password2 password=True %}
+  <ul class="rules" data-pw-rules aria-label="Password requirements">
+    <li data-rule="length" data-min="8"><span class="tick"><svg class="i i--sm" aria-hidden="true"><use href="#i-check"/></svg></span>At least 8 characters<span class="sr-only" data-state> (checked when you submit)</span></li>
+    <li data-rule="numeric"><span class="tick"><svg class="i i--sm" aria-hidden="true"><use href="#i-check"/></svg></span>Not only numbers<span class="sr-only" data-state> (checked when you submit)</span></li>
+    <li data-rule="match"><span class="tick"><svg class="i i--sm" aria-hidden="true"><use href="#i-check"/></svg></span>Both entries match<span class="sr-only" data-state> (checked when you submit)</span></li>
+    <li class="server"><span class="tick"><svg class="i i--sm" aria-hidden="true"><use href="#i-check"/></svg></span>Not a common password or too like your name or username (checked when you submit)</li>
+  </ul>
+  {% include 'store/_account_field.html' with field=form.phone hint="Used for delivery. You can add or change it later." %}
+  <button type="submit" class="btn btn--lg btn--block" data-busy>Create account</button>
+</form>
+<p class="auth-alt">Already have an account? <a href="{% url 'login' %}">Sign in</a></p>
+{% endblock %}

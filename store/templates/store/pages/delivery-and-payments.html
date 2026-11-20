@@ -1,0 +1,95 @@
+{# Delivery and payment information for customers. #}
+{% extends 'store/pages/_page_base.html' %}
+{% load static %}
+{% block toc %}
+<li><a href="#delivery-details">Delivery details</a></li>
+<li><a href="#prices">Prices and stock at checkout</a></li>
+<li><a href="#cod">Cash on delivery</a></li>
+<li><a href="#paying">Paying online</a></li>
+<li><a href="#methods">Accepted payment methods</a></li>
+<li><a href="#status">Order status</a></li>
+<li><a href="#problems">If a payment does not go through</a></li>
+{% endblock %}
+{% block page_body %}
+<section aria-labelledby="delivery-details">
+  <h2 id="delivery-details">Delivery details</h2>
+  <p>Your delivery name, address and phone number come from your <a href="{% url 'profile' %}">profile</a> when you have saved them, and you can enter or change them at checkout. The recipient name, a 10-digit mobile number, address line 1, city, state or union territory and a 6-digit PIN code are required to place an order; address line 2 is optional. Delivery is within India only. At checkout you can choose whether to save them to your profile.</p>
+  <p>Each order keeps a copy of the name, address and phone number you used at checkout. Changing your profile later does not change an order you have already placed.</p>
+  <div class="notice notice--blue">
+    <svg class="i" aria-hidden="true"><use href="#i-info"/></svg>
+    <p>Power Pick does not quote delivery times or delivery charges on this site, so this page makes no promise about either.</p>
+  </div>
+</section>
+
+<section aria-labelledby="prices">
+  <h2 id="prices">Prices and stock at checkout</h2>
+  <ul class="plain-list">
+    <li>All prices are in Indian rupees (₹).</li>
+    <li>Price and stock are checked again at checkout. If the total changed since you opened the page, checkout shows the new total before anything is reserved. If an item has sold out or is above the quantity available, you are sent back to your cart to fix it and the order is not placed.</li>
+    <li>The price you pay is saved on the order, so a later price change does not alter an order you have placed or its receipt.</li>
+    <li>The order total is the sum of each item's price multiplied by its quantity. Checkout does not add a separate delivery or tax line.</li>
+    <li>Items are held for you from the moment the order is placed. If the order is cancelled before payment, they return to stock.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="cod">
+  <h2 id="cod">Cash on delivery</h2>
+  <p>You can choose Cash on delivery at checkout instead of paying online. Nothing is charged when you place the order.</p>
+  <ol class="steps">
+    <li><strong>Place the order.</strong> The order is confirmed straight away and its items are set aside.</li>
+    <li><strong>Pay when it arrives.</strong> Pay the order total in cash on delivery. The order's payment stays Unpaid until then.</li>
+    <li><strong>Staff record the cash.</strong> After the order is Delivered, store staff mark the cash as collected and the payment becomes Paid.</li>
+  </ol>
+  <p>You can cancel a cash on delivery order yourself while it is Pending or Confirmed; its items go back to stock. See <a href="{% url 'page' 'cancellations' %}">Cancellations</a>.</p>
+</section>
+
+<section aria-labelledby="paying">
+  <h2 id="paying">Paying online</h2>
+  <p>Online payment is through Razorpay secure checkout, using UPI, cards or netbanking.</p>
+  <ol class="steps">
+    <li><strong>Place the order.</strong> The order is created with the status Pending and you are taken to the payment page.</li>
+    <li><strong>Pay in the Razorpay window.</strong> Your UPI, card or netbanking details are entered in Razorpay's own secure checkout. Power Pick never sees or stores your card or UPI details.</li>
+    <li><strong>The payment is verified.</strong> Power Pick checks the payment with Razorpay before it marks the order as paid. A successful payment moves the order to Confirmed.</li>
+  </ol>
+  <p>Power Pick keeps the payment status and the Razorpay payment reference so you can find them under <a href="{% url 'history' %}">payment history</a>.</p>
+</section>
+
+<section aria-labelledby="methods">
+  <h2 id="methods">Accepted payment methods</h2>
+  <p>Razorpay secure checkout accepts UPI, cards and netbanking. Power Pick never stores your card or UPI details.</p>
+  <ul class="pay-strip" aria-label="Payment methods shown in Razorpay checkout">
+    <li><img src="{% static 'store/pay/upi-default.svg' %}" alt="UPI" width="72" height="36"></li>
+    <li><img src="{% static 'store/pay/google-pay-default.svg' %}" alt="Google Pay" width="26" height="26"></li>
+    <li><img src="{% static 'store/pay/phonepe-default.svg' %}" alt="PhonePe" width="26" height="26"></li>
+    <li><img src="{% static 'store/pay/paytm-default.svg' %}" alt="Paytm" width="26" height="26"></li>
+    <li><img src="{% static 'store/pay/visa-default.svg' %}" alt="Visa" width="26" height="26"></li>
+    <li><img src="{% static 'store/pay/mastercard-default.svg' %}" alt="Mastercard" width="26" height="26"></li>
+    <li><span class="pay-word">Netbanking</span></li>
+    <li><img src="{% static 'store/pay/razorpay-default.svg' %}" alt="Razorpay" width="26" height="26"></li>
+  </ul>
+  <p class="muted small">Which options appear depends on Razorpay at the time you pay.</p>
+</section>
+
+<section aria-labelledby="status">
+  <h2 id="status">Order status</h2>
+  <p>An order's status shows where it is in fulfilment. Payment status is recorded separately.</p>
+  <dl class="plain">
+    <dt>Pending</dt><dd>The order is placed and waiting for online payment.</dd>
+    <dt>Confirmed</dt><dd>Payment has been received and verified, or the order was placed with cash on delivery.</dd>
+    <dt>Processing</dt><dd>Staff are preparing the order.</dd>
+    <dt>Shipped</dt><dd>Staff have marked the order as sent.</dd>
+    <dt>Delivered</dt><dd>Staff have marked the order as delivered.</dd>
+    <dt>Cancelled</dt><dd>The order will not go ahead. See <a href="{% url 'page' 'cancellations' %}">Cancellations</a>.</dd>
+  </dl>
+  <p>Staff move orders from one stage to the next. The status does not show a courier's live location.</p>
+</section>
+
+<section aria-labelledby="problems">
+  <h2 id="problems">If a payment does not go through</h2>
+  <ul class="plain-list">
+    <li>Closing the Razorpay window does not prove a payment either way. Open the order from <a href="{% url 'orders' %}">your orders</a> and check its recorded payment status.</li>
+    <li>If the order is still Pending and unpaid, use the payment action on that order to try again. You do not need to place a new order.</li>
+    <li>If Razorpay reports that a payment is still being confirmed, wait and check the order again before paying a second time.</li>
+  </ul>
+</section>
+{% endblock %}

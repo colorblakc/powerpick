@@ -1,0 +1,23 @@
+{# A single-line circuit with a break in it. Static markup, safe to include from any template. #}
+<svg class="circuit-break" viewBox="0 0 560 140" role="img" aria-label="A single-line circuit diagram with a break in the line, so the load at the right end is cut off from the supply.">
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g class="cb-supply" stroke="currentColor" stroke-width="2">
+      <circle cx="28" cy="70" r="12"/>
+      <path d="M21 70c2.500-6 5-6 7 0s4.500 6 7 0"/>
+      <path class="cb-run" d="M40 70h172"/>
+      <circle cx="212" cy="70" r="4" fill="var(--paper)"/>
+    </g>
+    <g class="cb-spark" stroke="var(--fault)" stroke-width="2.500">
+      <path d="M262 34l-18 40h20l-16 36"/>
+      <path d="M226 52l-8-8M226 88l-9 7M290 52l8-8"/>
+    </g>
+    <g class="cb-load" stroke="currentColor" stroke-width="2">
+      <circle cx="300" cy="70" r="4" fill="var(--paper)"/>
+      <path class="cb-run cb-run--late" d="M304 70h160"/>
+      <circle cx="500" cy="70" r="26"/>
+      <path d="M481.600 51.600l36.800 36.800M518.400 51.600l-36.800 36.800"/>
+      <path d="M464 70h10"/>
+    </g>
+    <path d="M12 118h536" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 6"/>
+  </g>
+</svg>

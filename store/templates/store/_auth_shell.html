@@ -1,0 +1,34 @@
+{% extends "store/base.html" %}
+{% load static %}
+{% block styles %}<link rel="stylesheet" href="{% static 'store/account.css' %}"><link rel="stylesheet" href="{% static 'store/auth.css' %}">{% endblock %}
+{% block body_class %}page-auth{% endblock %}
+{% block content %}
+<div class="wrap auth-wrap">
+  <div class="auth-sheet">
+    <aside class="auth-ink on-ink" aria-label="Why sign in">
+      <a class="logo auth-logo" href="{% url 'home' %}" aria-label="Power Pick home"><img class="auth-mark" src="{% static 'store/brand/head-dark.png' %}" alt="" width="60" height="61"></a>
+      <svg class="circuit" viewBox="0 0 520 150" role="img" aria-label="A glowing single line runs from the supply through a breaker, a board and a switch to a lamp, which lights when the line is energised.">
+        <path class="base" d="M24 75H210V40H300V110H400V75H478"/>
+        <path class="run" pathLength="1" d="M24 75H210V40H300V110H400V75H478"/>
+        <circle class="n" style="--at:0s" cx="24" cy="75" r="5"/>
+        <rect class="sym n" style="--at:.35s" x="122" y="64" width="16" height="22" rx="4"/>
+        <rect class="sym n" style="--at:.75s" x="236" y="30" width="38" height="20" rx="4"/>
+        <circle class="n" style="--at:1.1s" cx="350" cy="110" r="5"/>
+        <path class="sw n" style="--at:1.1s" d="M350 110l22-16"/>
+        <circle class="lamp n" style="--at:1.7s" cx="492" cy="75" r="14"/>
+        <path class="lamp-x" d="M482 65l20 20M502 65l-20 20"/>
+      </svg>
+      <h2>{% block ink_title %}Pick up where your last order left off.{% endblock %}</h2>
+      <ul class="reasons">
+        <li><span class="rnode"><svg class="i" aria-hidden="true"><use href="#i-package"/></svg></span><div><strong>Track your orders</strong><span>Watch each order move along a status line, from placed to delivered, and print a receipt.</span></div></li>
+        <li><span class="rnode"><svg class="i" aria-hidden="true"><use href="#i-map-pin"/></svg></span><div><strong>Saved delivery details</strong><span>Your address and phone fill in at checkout, and you can change them any time.</span></div></li>
+        <li><span class="rnode"><svg class="i" aria-hidden="true"><use href="#i-heart"/></svg></span><div><strong>Wishlist and reviews</strong><span>Save parts for later and review the products you have bought.</span></div></li>
+      </ul>
+    </aside>
+    <section class="auth-form" aria-labelledby="auth-title">
+      {% block form_side %}{% endblock %}
+    </section>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'store/account.js' %}" defer></script>{% endblock %}

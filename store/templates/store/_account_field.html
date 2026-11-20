@@ -1,0 +1,9 @@
+{# One labelled field with hint and inline error. Include with field=form.name, optional hint="...", password=True. #}
+<div class="field{% if field.errors %} has-error{% endif %}">
+  <label for="{{ field.id_for_label }}">{{ field.label }}{% if not field.field.required %} <span class="opt">optional</span>{% endif %}</label>
+  {% if password %}
+  <div class="pw">{{ field }}<button type="button" class="pw-toggle" data-pw-toggle aria-pressed="false" aria-label="Show {{ field.label|lower }}" hidden><svg class="i i--sm" aria-hidden="true"><use href="#i-eye"/></svg><span>Show</span></button></div>
+  {% else %}{{ field }}{% endif %}
+  {% if hint %}<p class="hint" id="{{ field.auto_id }}-hint">{{ hint }}</p>{% elif field.help_text and not password %}<p class="hint" id="{{ field.auto_id }}-hint">{{ field.help_text }}</p>{% endif %}
+  {% if field.errors %}<p class="field-error" id="{{ field.auto_id }}-error"><svg class="i i--sm" aria-hidden="true"><use href="#i-alert"/></svg><span>{% for error in field.errors %}{{ error }}{% if not forloop.last %} {% endif %}{% endfor %}</span></p>{% endif %}
+</div>

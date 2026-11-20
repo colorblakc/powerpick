@@ -1,0 +1,14 @@
+{% load static %}{# Accepted payment methods. Brand marks from store/static/store/pay/. #}
+<div class="pay-strip">
+  <p class="pay-strip-label">Pay securely with</p>
+  <ul class="pay-logos">
+    <li><img src="{% static 'store/pay/upi-default.svg' %}" alt="UPI" height="24" width="48"></li>
+    <li><img src="{% static 'store/pay/google-pay-default.svg' %}" alt="Google Pay" height="24" width="24"></li>
+    <li><img src="{% static 'store/pay/phonepe-default.svg' %}" alt="PhonePe" height="24" width="24"></li>
+    <li><img src="{% static 'store/pay/paytm-default.svg' %}" alt="Paytm" height="24" width="24"></li>
+    <li><img src="{% static 'store/pay/visa-default.svg' %}" alt="Visa" height="24" width="24"></li>
+    <li><img src="{% static 'store/pay/mastercard-default.svg' %}" alt="Mastercard" height="24" width="24"></li>
+  </ul>
+  <p class="pay-secure"><svg class="i i--sm" aria-hidden="true"><use href="#i-lock"/></svg><span>Payments are processed by Razorpay. Power Pick never stores card or UPI details.</span></p>
+  <p class="pay-by">Secured by <img src="{% static 'store/pay/razorpay-default.svg' %}" alt="Razorpay" height="16" width="16"><b>Razorpay</b></p>
+</div>

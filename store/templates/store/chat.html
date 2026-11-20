@@ -1,0 +1,44 @@
+{# Floating assistant interface. Answers and product details come from the server. #}
+{% load static %}
+<link rel="stylesheet" href="{% static 'store/chat.css' %}">
+{# The assistant is an enhancement: JavaScript reveals the launcher once it can respond. #}
+{# data-name is the signed-in customer's first name (auto-escaped); data-view is the current page's route name. #}
+<aside class="pp-help" id="pp-help" aria-label="Power Pick Assistant"
+       data-ask-url="{% url 'chat_ask' %}"
+       data-face="{% static 'store/assistant.svg' %}"
+       data-view="{{ request.resolver_match.url_name|default:'' }}"
+       data-signed-in="{% if user.is_authenticated %}1{% else %}0{% endif %}"
+       data-name="{% if user.is_authenticated %}{{ user.first_name|default:'' }}{% endif %}">
+  <button class="pp-launch pp-help-launch" type="button" aria-expanded="false" aria-controls="pp-panel" hidden>
+    <span class="pp-face">
+      <img src="{% static 'store/assistant.svg' %}" alt="" width="40" height="40">
+      <span class="pp-live" aria-hidden="true"></span>
+    </span>
+    <span class="pp-launch-label">Ask Power Pick</span>
+  </button>
+
+  <section class="pp-panel" id="pp-panel" role="dialog" aria-modal="false" aria-labelledby="pp-title" hidden>
+    <header class="pp-head">
+      <img class="pp-mark" src="{% static 'store/assistant.svg' %}" alt="" width="40" height="40">
+      <div class="pp-head-text">
+        <h2 id="pp-title">Power Pick Assistant</h2>
+        <p><span class="pp-live" aria-hidden="true"></span>Product, stock and order help</p>
+      </div>
+      <button class="pp-icon" type="button" data-pp-clear aria-label="Clear conversation" title="Clear conversation"><svg class="i" aria-hidden="true"><use href="#i-trash"/></svg></button>
+      <button class="pp-icon" type="button" data-pp-close aria-label="Minimize assistant" title="Minimize"><svg class="i" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
+    </header>
+
+    <div class="pp-log" role="log" aria-label="Conversation" aria-live="polite" aria-relevant="additions" tabindex="0"></div>
+
+    <div class="pp-chips" aria-label="Suggested questions"></div>
+
+    <form class="pp-form" action="{% url 'chat_ask' %}" method="post" novalidate>
+      {% csrf_token %}
+      <label class="pp-sr" for="pp-input">Ask about a product, stock, price or an order</label>
+      <input id="pp-input" name="question" type="text" minlength="2" maxlength="350" autocomplete="off" enterkeyhint="send"
+             placeholder="Ask about a product or an order">
+      <button class="pp-send" type="submit" aria-label="Send question"><svg class="i" aria-hidden="true"><use href="#i-send"/></svg></button>
+    </form>
+  </section>
+</aside>
+<script src="{% static 'store/chat.js' %}" defer></script>

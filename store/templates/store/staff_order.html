@@ -1,0 +1,85 @@
+{# An order’s details and the actions permitted for its current state. #}
+{% extends 'store/staff_base.html' %}{% load shop_tags %}
+{% block staff_title %}Order #{{ order.pk }}{% endblock %}
+{% block back %}<a class="back-link" href="{% url 'sales' %}"><svg class="i i--sm" aria-hidden="true"><use href="#i-arrow-left"/></svg>All orders</a>{% endblock %}
+{% block heading %}Order #{{ order.pk }} {% include 'store/_staff_status.html' with status=order.status %}{% endblock %}
+{% block sub %}<p>Placed {{ order.created|date:"j F Y, H:i" }} by <a href="{% url 'staff_customer' order.user_id %}">{{ order.user.get_full_name|default:order.user.username }}</a></p>{% endblock %}
+{% block actions %}<a class="btn btn--ghost btn--sm" href="/orders/{{ order.pk }}/receipt/" target="_blank" rel="noopener"><svg class="i" aria-hidden="true"><use href="#i-print"/></svg>Print receipt</a>{% endblock %}
+
+{% block staff_content %}
+{% if order.status == 'Payment review' %}
+<p class="notice notice--fault stopped" role="alert"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg><span><b>Payment arrived after this order was cancelled.</b> Stock was already released. It cannot be moved forward here; review the payment in the Razorpay dashboard and contact the customer.</span></p>
+{% elif order.status == 'Cancelled' %}
+<p class="notice stopped"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg><span>This order was cancelled and its items were returned to stock.</span></p>
+{% endif %}
+<div class="order-grid">
+  <div>
+    <section aria-labelledby="items-h">
+      <div class="pane-head"><h2 id="items-h">Items</h2></div>
+      <div class="tbl-wrap"><table class="tbl tbl--dense tbl--stack">
+        <thead><tr><th scope="col">Product</th><th scope="col" class="num">Unit price</th><th scope="col" class="num">Qty</th><th scope="col" class="num">Line total</th></tr></thead>
+        <tbody>{% for item in items %}
+          <tr><td class="span">{% if item.product %}<a class="name" href="{% url 'staff_product_edit' item.product_id %}">{{ item.name }}</a>{% else %}<span class="name">{{ item.name }}</span><span class="sub">Product no longer in the catalogue</span>{% endif %}</td>
+            <td data-label="Unit price" class="num">₹{{ item.price|floatformat:"2g" }}</td><td data-label="Qty" class="num">{{ item.quantity }}</td>
+            <td data-label="Line total" class="num">₹{{ item.line|floatformat:"2g" }}</td></tr>{% endfor %}</tbody>
+      </table></div>
+      <div class="totals"><div class="grand"><span>Order total</span><span class="price">₹{{ order.total|floatformat:"2g" }}</span></div></div>
+    </section>
+
+    <div class="split" style="grid-template-columns:repeat(auto-fit,minmax(16rem,1fr))">
+      <section class="panel" aria-labelledby="cust-h"><h2 id="cust-h">Customer</h2>
+        <dl class="meta"><dt>Name</dt><dd>{{ order.user.get_full_name|default:"Not given" }}</dd><dt>Username</dt><dd><a href="{% url 'staff_customer' order.user_id %}">{{ order.user.username }}</a></dd>
+          <dt>Email</dt><dd>{{ order.user.email|default:"Not given" }}</dd></dl></section>
+      <section class="panel" aria-labelledby="ship-h"><h2 id="ship-h">Delivery address</h2>
+        <p>{% if order.name %}<strong>{{ order.name }}</strong><br>{% endif %}{{ order.address|linebreaksbr }}</p><p class="small muted" style="margin-top:var(--s2)">Phone {{ order.phone|phone }}</p></section>
+    </div>
+  </div>
+
+  <div>
+    <section class="panel" aria-labelledby="pay-h">
+      <h2 id="pay-h">Payment</h2>
+      <dl class="meta">
+        <dt>Status</dt><dd>{% include 'store/_staff_status.html' with status=payment.status %}</dd>
+        <dt>Method</dt><dd>{% include 'store/_staff_method.html' with method=payment.method %}</dd>
+        <dt>Amount</dt><dd>₹{{ order.total|floatformat:"2g" }}</dd>
+        {% if payment.method == 'COD' %}<dt>Collect</dt><dd>{% if payment.status == 'Paid' %}Cash collected{% else %}₹{{ order.total|floatformat:"2g" }} in cash on delivery{% endif %}</dd>
+        {% else %}<dt>Razorpay order</dt><dd class="mono-sm">{{ payment.gateway_order|default:"Not created yet" }}</dd>{% endif %}
+        <dt>Payment reference</dt><dd class="mono-sm">{{ payment.reference|default:"None yet" }}</dd>
+      </dl>
+      {% if payment.method == 'COD' %}
+        {% if can_collect %}<div class="action-stack"><form method="post" action="{% url 'cash_collected' order.pk %}" data-confirm="Record ₹{{ order.total|floatformat:'2g' }} cash collected for order #{{ order.pk }}? This marks the payment Paid and cannot be undone here.">{% csrf_token %}
+          <button class="btn" type="submit" data-busy><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Mark cash collected</button></form></div>
+        <p class="action-note">The courier handed over the order. Record the cash once it reaches the shop.</p>
+        {% elif payment.status == 'Paid' %}<p class="action-note">Cash was collected on delivery. This payment is closed.</p>
+        {% elif order.status == 'Cancelled' %}<p class="action-note">Cancelled before delivery, so no cash is due.</p>
+        {% else %}<p class="action-note">Cash on delivery: nothing is charged online. After delivery, the cash can be recorded here.</p>{% endif %}
+      {% endif %}
+      {% if can_recheck or can_cancel_gateway %}
+      <div class="action-stack">
+        {% if can_recheck %}<form method="post" action="{% url 'gateway_reconcile' order.pk %}">{% csrf_token %}<input type="hidden" name="return_to" value="staff">
+          <button class="btn btn--ghost" type="submit" data-busy{% if not has_gateway_order %} disabled{% endif %}><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg>Re-check payment with Razorpay</button></form>{% endif %}
+        {% if can_cancel_gateway %}<form method="post" action="{% url 'gateway_cancel' order.pk %}" data-confirm="Cancel unpaid order #{{ order.pk }} and return its items to stock? Razorpay is checked first.">{% csrf_token %}<input type="hidden" name="return_to" value="staff">
+          <button class="btn btn--danger" type="submit"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg>Cancel unpaid order</button></form>{% endif %}
+      </div>
+      <p class="action-note">{% if has_gateway_order %}Staff cannot mark a payment as paid. Only Razorpay's own record can, and this button reads it.{% else %}The customer has not opened payment yet, so there is nothing at Razorpay to check.{% endif %}</p>
+      {% elif payment.status == 'Paid' and payment.method != 'COD' %}<p class="action-note">Verified with Razorpay. This payment cannot be edited here.</p>{% endif %}
+    </section>
+
+    <section class="panel" aria-labelledby="flow-h">
+      <h2 id="flow-h">Order progress</h2>
+      <ol class="timeline" aria-label="Order progress">
+        {% for step in steps %}<li class="is-{{ step.state }}"{% if step.state == 'current' %} aria-current="step"{% endif %}><span class="dot" aria-hidden="true">{% if step.state == 'done' %}<svg class="i" aria-hidden="true"><use href="#i-check"/></svg>{% endif %}</span>{{ step.name }}{% if step.state == 'current' %}<span class="sr-only"> (current step)</span>{% endif %}</li>{% endfor %}
+      </ol>
+      {% if next_status or can_cancel %}
+      <div class="action-stack">
+        {% if next_status %}<form method="post" action="{% url 'transition' order.pk %}">{% csrf_token %}
+          <button class="btn" type="submit" name="status" value="{{ next_status }}" data-busy>Mark as {{ next_status }}<svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></button></form>{% endif %}
+        {% if can_cancel %}<form method="post" action="{% url 'transition' order.pk %}" data-confirm="Cancel order #{{ order.pk }} and return its items to stock?">{% csrf_token %}
+          <button class="btn btn--danger" type="submit" name="status" value="Cancelled">Cancel order</button></form>{% endif %}
+      </div>
+      {% elif order.status == 'Pending' and payment.method != 'COD' %}<p class="action-note">This order moves to Confirmed by itself once Razorpay confirms the payment.</p>
+      {% elif order.status == 'Delivered' %}<p class="action-note">Delivered. There are no further steps.</p>{% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

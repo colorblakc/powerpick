@@ -1,0 +1,51 @@
+{# Privacy information for account, order and payment data. #}
+{% extends 'store/pages/_page_base.html' %}
+{% block toc %}
+<li><a href="#collected">What we store</a></li>
+<li><a href="#why">Why we store it</a></li>
+<li><a href="#never">What we never store</a></li>
+<li><a href="#sharing">Who else sees it</a></li>
+<li><a href="#cookies">Cookies</a></li>
+<li><a href="#choices">Your choices</a></li>
+{% endblock %}
+{% block page_body %}
+<section aria-labelledby="collected">
+  <h2 id="collected">What we store</h2>
+  <p>Power Pick keeps only what it needs to run accounts and orders.</p>
+  <dl class="plain">
+    <dt>Your account</dt><dd>Your name, username, email address and password. Passwords are stored using Django's password hashing, not as plain text, and staff cannot read them.</dd>
+    <dt>Delivery details</dt><dd>The phone number and delivery address in your profile, and the copy of each that is saved on every order you place.</dd>
+    <dt>Order history</dt><dd>Your orders: items, the price paid, quantities, status, and the payment method and status, with the Razorpay payment reference for online payments.</dd>
+    <dt>Things you add</dt><dd>Products you save to your wishlist and any reviews you write.</dd>
+  </dl>
+</section>
+
+<section aria-labelledby="why">
+  <h2 id="why">Why we store it</h2>
+  <p>To sign you in, keep your cart, place and pay for orders, show your order and payment history, and let store staff fulfil orders. Store staff can see the orders, delivery addresses and phone numbers needed to fulfil them.</p>
+</section>
+
+<section aria-labelledby="never">
+  <h2 id="never">What we never store</h2>
+  <p>Power Pick never stores card numbers, UPI details or other payment credentials. You enter them in Razorpay's own payment window, and Power Pick only receives the result and a payment reference.</p>
+</section>
+
+<section aria-labelledby="sharing">
+  <h2 id="sharing">Who else sees it</h2>
+  <dl class="plain">
+    <dt>Razorpay</dt><dd>Payments are handled by Razorpay. When you pay, the order amount and your payment details go to Razorpay under its own terms and privacy notice.</dd>
+    <dt>Groq</dt><dd>When you ask the assistant a question, the question text and a few matching product and FAQ records are sent to Groq to generate the answer. Your name, account, address and orders are not sent, but anything you type into the question is. Do not put private details in a question.</dd>
+  </dl>
+  <p>Power Pick does not run advertising or analytics trackers. Fonts and other assets are served from the site itself.</p>
+</section>
+
+<section aria-labelledby="cookies">
+  <h2 id="cookies">Cookies</h2>
+  <p>The site uses a session cookie to keep you signed in and to remember your cart, and a security cookie that protects forms from being submitted by other sites. Neither is used for tracking.</p>
+</section>
+
+<section aria-labelledby="choices">
+  <h2 id="choices">Your choices</h2>
+  <p>You can change your name, email, phone number and delivery address from your <a href="{% url 'profile' %}">profile</a> at any time. Orders keep the details used when they were placed, so that a receipt stays accurate. To ask about anything else, see <a href="{% url 'page' 'contact' %}">Contact</a>.</p>
+</section>
+{% endblock %}

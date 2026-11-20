@@ -1,0 +1,10 @@
+{# Pagination. Usage: {% include 'store/_staff_pager.html' with page=page qs=qs %} #}
+{% if page.paginator.num_pages > 1 %}
+<div class="pager">
+  <span>Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+  <nav aria-label="Pages">
+    {% if page.has_previous %}<a class="btn btn--ghost btn--sm" href="?{% if qs %}{{ qs }}&amp;{% endif %}page={{ page.previous_page_number }}" rel="prev"><svg class="i i--sm" aria-hidden="true"><use href="#i-arrow-left"/></svg>Previous</a>{% endif %}
+    {% if page.has_next %}<a class="btn btn--ghost btn--sm" href="?{% if qs %}{{ qs }}&amp;{% endif %}page={{ page.next_page_number }}" rel="next">Next<svg class="i i--sm" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>{% endif %}
+  </nav>
+</div>
+{% endif %}

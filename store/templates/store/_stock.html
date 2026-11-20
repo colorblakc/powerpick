@@ -1,0 +1,5 @@
+{# Stock gauge. Usage: {% include 'store/_stock.html' with product=product %} #}
+{% if product.stock <= 0 %}<span class="stock stock--out"><svg class="i i--sm" aria-hidden="true"><use href="#i-x"/></svg>Out of stock</span>
+{% elif product.stock <= 5 %}<span class="stock stock--last" role="img" aria-label="Last {{ product.stock }} in stock"><span aria-hidden="true"><i></i><i></i><i></i></span>Last {{ product.stock }}</span>
+{% elif product.stock <= 15 %}<span class="stock stock--low" role="img" aria-label="Low stock, {{ product.stock }} left"><span aria-hidden="true"><i></i><i></i><i></i></span>Low · {{ product.stock }} left</span>
+{% else %}<span class="stock stock--high" role="img" aria-label="In stock"><span aria-hidden="true"><i></i><i></i><i></i></span>In stock</span>{% endif %}

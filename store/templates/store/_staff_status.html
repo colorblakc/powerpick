@@ -1,0 +1,2 @@
+{# Order or payment status tag. Usage: {% include 'store/_staff_status.html' with status=order.status %} #}
+<span class="tag {% if status == 'Delivered' or status == 'Paid' %}tag--ok{% elif status == 'Payment review' or status == 'Failed' %}tag--fault{% elif status == 'Pending' or status == 'Unpaid' %}tag--warn{% elif status == 'Cancelled' %}{% else %}tag--blue{% endif %}">{{ status }}</span>

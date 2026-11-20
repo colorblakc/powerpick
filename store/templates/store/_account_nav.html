@@ -1,0 +1,9 @@
+{# Account area navigation. Include with current="profile|orders|history|password". #}
+{% url 'wishlist' as wishlist_url %}
+<nav class="acct-nav" aria-label="Your account">
+  <a href="{% url 'profile' %}"{% if current == 'profile' %} aria-current="page"{% endif %}><svg class="i" aria-hidden="true"><use href="#i-user"/></svg>Profile</a>
+  <a href="{% url 'orders' %}"{% if current == 'orders' %} aria-current="page"{% endif %}><svg class="i" aria-hidden="true"><use href="#i-package"/></svg>Orders</a>
+  <a href="{% url 'history' %}"{% if current == 'history' %} aria-current="page"{% endif %}><svg class="i" aria-hidden="true"><use href="#i-card"/></svg>Payment history</a>
+  {% if wishlist_url %}<a href="{{ wishlist_url }}"><svg class="i" aria-hidden="true"><use href="#i-heart"/></svg>Wishlist</a>{% endif %}
+  <a href="{% url 'password_change' %}"{% if current == 'password' %} aria-current="page"{% endif %}><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg>Password</a>
+</nav>

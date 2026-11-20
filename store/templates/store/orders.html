@@ -1,0 +1,31 @@
+{# Order list or payment history, scoped to the signed-in customer. #}
+{% extends "store/base.html" %}
+{% load static %}
+{% block title %}{% if payments %}Payment history{% else %}My orders{% endif %} · Power Pick{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'store/account.css' %}">{% endblock %}
+{% block content %}
+<div class="wrap acct">
+  <header class="acct-head"><h1>{% if payments %}Payment history{% else %}My orders{% endif %}</h1>
+    <p class="muted">{% if payments %}Method, status and gateway reference for each payment.{% else %}Track each order along its status line, or print a receipt.{% endif %}</p></header>
+  {% include 'store/_account_nav.html' with current=payments|yesno:'history,orders' %}
+  {% if total_orders %}
+  <nav class="chips" aria-label="{% if payments %}Filter by payment status{% else %}Filter by order status{% endif %}">
+    {% for chip in chips %}<a class="chip" href="{% if chip.value %}?status={{ chip.value|urlencode }}{% else %}?{% endif %}"{% if chip.active %} aria-current="true"{% endif %}>{{ chip.label }}<span class="chip-n">{{ chip.count }}</span></a>{% endfor %}
+  </nav>
+  {% if records %}
+  <div class="olist">{% for order in records %}{% include 'store/_order_row.html' %}{% endfor %}</div>
+  {% if page.has_other_pages %}
+  <nav class="pager" aria-label="Pages">
+    {% if page.has_previous %}<a class="btn btn--ghost btn--sm" href="?{% if status %}status={{ status|urlencode }}&amp;{% endif %}page={{ page.previous_page_number }}"><svg class="i i--sm" aria-hidden="true"><use href="#i-arrow-left"/></svg>Newer</a>{% endif %}
+    <span class="muted small">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}<a class="btn btn--ghost btn--sm" href="?{% if status %}status={{ status|urlencode }}&amp;{% endif %}page={{ page.next_page_number }}">Older<svg class="i i--sm" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>{% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+  <div class="empty"><svg class="i" aria-hidden="true"><use href="#i-package"/></svg><h2>No {% if payments %}{{ status|lower }} payments{% else %}{{ status|lower }} orders{% endif %}</h2><p>Nothing matches this filter. Choose another status or view all.</p><a class="btn btn--ghost" href="?">Show all</a></div>
+  {% endif %}
+  {% else %}
+  <div class="empty empty--mascot"><img class="mascot mascot--wave" src="{% static 'store/brand/mascot-wave.webp' %}" alt="" width="104" height="102"><h2>{% if payments %}No payments yet{% else %}No orders yet{% endif %}</h2><p>When you place an order it appears here, with its status and receipt.</p><a class="btn" href="{% url 'catalogue' %}">Shop the catalogue</a></div>
+  {% endif %}
+</div>
+{% endblock %}

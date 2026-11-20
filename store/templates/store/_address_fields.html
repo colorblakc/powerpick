@@ -1,0 +1,12 @@
+{% load static %}{# The structured Indian address fields. Include with form=<DeliveryForm>. Script: store/address.js #}
+<div class="addr-grid" data-address-form data-cities-url="{% static 'store/india-cities.json' %}">
+  {% include 'store/_addr_field.html' with field=form.name wide=True %}
+  {% include 'store/_addr_field.html' with field=form.line1 wide=True hint="House or flat number, building name." %}
+  {% include 'store/_addr_field.html' with field=form.line2 wide=True hint="Street, area or landmark." %}
+  {% include 'store/_addr_field.html' with field=form.state %}
+  {% include 'store/_addr_field.html' with field=form.city hint="Pick your city, or choose Other city to type it." %}
+  {% include 'store/_addr_field.html' with field=form.pincode %}
+  {% include 'store/_addr_field.html' with field=form.phone prefix="+91" hint="10-digit mobile number the courier can call." %}
+  <p class="addr-country addr-wide"><svg class="i i--sm" aria-hidden="true"><use href="#i-map-pin"/></svg><span>Country <b>India</b>. Delivery is within India only.</span></p>
+</div>
+<script src="{% static 'store/address.js' %}" defer></script>

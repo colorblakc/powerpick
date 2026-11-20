@@ -1,0 +1,6 @@
+{% load static %}<div class="empty empty--mascot" data-cart-empty>
+  <img class="mascot mascot--wave" src="{% static 'store/brand/mascot-wave.webp' %}" alt="" width="104" height="102">
+  <h2>Your cart is empty</h2>
+  <p>Add products from the shop and they will wait here while you keep browsing.</p>
+  <a class="btn" href="{% url 'catalogue' %}">Shop all products<svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+</div>

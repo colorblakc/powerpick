@@ -1,0 +1,46 @@
+{# Inventory levels and stock adjustments for staff. #}
+{% extends 'store/staff_base.html' %}{% load static %}
+{% block staff_title %}Inventory{% endblock %}
+{% block heading %}Inventory{% endblock %}
+{% block sub %}<p>Lowest stock first. {{ out_count }} out of stock, {{ low_count }} at {{ low_limit }} units or fewer.</p>{% endblock %}
+{% block actions %}<a class="btn btn--ghost btn--sm" href="{% url 'staff_products' %}"><svg class="i" aria-hidden="true"><use href="#i-box-open"/></svg>Products</a>{% endblock %}
+
+{% block staff_content %}
+<form class="filters" method="get" role="search" aria-label="Filter inventory">
+  <div class="f f--grow"><label for="f-q">Search</label><input id="f-q" type="search" name="q" value="{{ request.GET.q }}" placeholder="Name, brand or option" autocomplete="off"></div>
+  <div class="f"><label for="f-cat">Category</label><select id="f-cat" name="category"><option value="">All categories</option>{% for c in categories %}<option value="{{ c.pk }}"{% if request.GET.category == c.pk|stringformat:"s" %} selected{% endif %}>{{ c.name }}</option>{% endfor %}</select></div>
+  <div class="f"><label for="f-state">Availability</label><select id="f-state" name="state"><option value="">All</option><option value="available"{% if request.GET.state == 'available' %} selected{% endif %}>Available in shop</option><option value="hidden"{% if request.GET.state == 'hidden' %} selected{% endif %}>Hidden from shop</option></select></div>
+  <div class="f f--check"><input id="f-low" type="checkbox" name="low" value="1"{% if request.GET.low %} checked{% endif %}><label for="f-low">Low stock only</label></div>
+  <div class="filters-end"><button class="btn btn--sm" type="submit">Apply</button>{% if request.GET.q or request.GET.category or request.GET.state or request.GET.low %}<a class="btn btn--ghost btn--sm" href="{% url 'staff_inventory' %}">Clear</a>{% endif %}</div>
+</form>
+
+<div class="result-line"><span>{{ page.paginator.count }} product{{ page.paginator.count|pluralize }}. Type a new quantity and press Enter to set it, or add a delivery.</span></div>
+{% if page %}
+<div class="tbl-wrap"><table class="tbl tbl--dense tbl--stack">
+  <thead><tr><th scope="col">Product</th><th scope="col">Category</th><th scope="col">Stock level</th><th scope="col">Set quantity</th><th scope="col">Add delivery</th><th scope="col">In shop</th></tr></thead>
+  <tbody>
+  {% for product in page %}
+    <tr data-row{% if not product.available %} class="is-muted"{% endif %}>
+      <td class="span"><div class="cell-prod"><span class="thumb">{% if product.image %}<img src="{{ product.image.url }}" alt="" width="40" height="40" loading="lazy">{% else %}<svg class="i" aria-hidden="true"><use href="#i-box-open"/></svg>{% endif %}</span>
+        <span><a class="name" href="{% url 'staff_product_edit' product.pk %}">{{ product.name }}</a><span class="sub">{{ product.brand }}{% if product.variant_label %} · {{ product.variant_label }}{% endif %}</span></span></div></td>
+      <td data-label="Category">{{ product.category.name }}</td>
+      <td data-label="Stock level"><span data-gauge>{% include 'store/_staff_stock.html' %}</span><p class="row-note" aria-live="polite"></p></td>
+      <td data-label="Set quantity"><form class="inline-form" method="post" action="{% url 'staff_stock' product.pk %}" data-stock>{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <label class="sr-only" for="qty-{{ product.pk }}">Quantity in stock for {{ product.name }}</label>
+        <input id="qty-{{ product.pk }}" type="number" name="quantity" min="0" max="100000" step="1" inputmode="numeric" value="{{ product.stock }}" required>
+        <button class="btn btn--ghost btn--sm" type="submit">Set</button></form></td>
+      <td data-label="Add delivery"><form class="inline-form inline-form--add" method="post" action="{% url 'staff_stock' product.pk %}" data-stock>{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <label class="sr-only" for="add-{{ product.pk }}">Units to add to {{ product.name }}</label>
+        <input id="add-{{ product.pk }}" type="number" name="add" min="1" max="100000" step="1" inputmode="numeric" placeholder="+" required>
+        <button class="btn btn--ghost btn--sm" type="submit">Add</button></form></td>
+      <td data-label="In shop"><form method="post" action="{% url 'staff_product_toggle' product.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+        {% if product.available %}<button class="btn btn--ghost btn--sm" type="submit">Mark unavailable</button>{% else %}<button class="btn btn--ghost btn--sm" type="submit">Make available</button>{% endif %}</form></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% include 'store/_staff_pager.html' %}
+{% else %}
+<div class="empty"><img class="empty-mark" src="{% static 'store/brand/head-dark.png' %}" alt="" width="56" height="57" loading="lazy"><h2>No products match</h2><p>Try a shorter search or clear the filters.</p><a class="btn btn--ghost" href="{% url 'staff_inventory' %}">Clear filters</a></div>
+{% endif %}
+{% endblock %}

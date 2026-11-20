@@ -1,0 +1,6 @@
+{# A checkbox field. Usage: {% include 'store/_staff_check.html' with field=form.available hint="..." %} #}
+<div class="field--check">
+  {{ field }}<label for="{{ field.id_for_label }}">{{ field.label }}</label>
+  {% if hint %}<p class="hint">{{ hint }}</p>{% endif %}
+  {% if field.errors %}<ul class="errorlist" id="{{ field.id_for_label }}_errors">{% for error in field.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+</div>

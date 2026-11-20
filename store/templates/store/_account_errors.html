@@ -1,0 +1,13 @@
+{# Summary above a form. Names what went wrong and links to each field. Include with form=form, title="...". #}
+{% if form.errors %}
+<div class="err-summary" role="alert" tabindex="-1" data-error-summary>
+  <svg class="i" aria-hidden="true"><use href="#i-alert"/></svg>
+  <div>
+    <strong>{{ title|default:"Check the form and try again." }}</strong>
+    <ul>
+      {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+      {% for field in form %}{% if field.errors %}<li><a href="#{{ field.id_for_label }}">{{ field.label }}</a>: {% for error in field.errors %}{{ error }} {% endfor %}</li>{% endif %}{% endfor %}
+    </ul>
+  </div>
+</div>
+{% endif %}

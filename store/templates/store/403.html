@@ -1,0 +1,34 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block title %}Access denied · Power Pick{% endblock %}
+{% block meta_description %}Your account does not have access to this page.{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'store/pages.css' %}">{% endblock %}
+{% block body_class %}page-error{% endblock %}
+{% block content %}
+<div class="wrap err">
+  <div class="err-main">
+    <div class="err-copy">
+      <h1>You do not have access to this page</h1>
+      {% if user.is_authenticated %}
+      <p>You are signed in as {{ user.get_full_name|default:user.username }}, and this account cannot open this page. Staff pages and other customers' orders are limited to the people they belong to.</p>
+      {% else %}
+      <p>This page is limited to certain accounts. If it belongs to your account, sign in and try again.</p>
+      {% endif %}
+      <p class="err-links">
+        {% if not user.is_authenticated %}<a class="btn" href="{% url 'login' %}?next={{ request.path|urlencode }}"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg>Sign in</a>{% endif %}
+        <a class="btn btn--ghost" href="{% url 'home' %}"><svg class="i" aria-hidden="true"><use href="#i-arrow-left"/></svg>Back to the shop</a>
+        {% if user.is_authenticated %}<a class="btn btn--ghost" href="{% url 'orders' %}"><svg class="i" aria-hidden="true"><use href="#i-package"/></svg>My orders</a>{% endif %}
+      </p>
+    </div>
+    <div class="err-art">{% include 'store/pages/_circuit_break.html' %}<p class="err-code"><span>Status <b>403</b></span><img class="err-mark" src="{% static 'store/brand/head-dark.png' %}" alt="" width="52" height="53"></p></div>
+  </div>
+  {% if rail %}
+  <nav class="err-nodes" aria-label="Shop by category">
+    <h2>Carry on shopping</h2>
+    <ul class="ruled ruled--grid">
+      {% for node in rail %}<li><a href="{{ node.url }}"><svg class="i" aria-hidden="true"><use href="#{{ node.icon }}"/></svg>{{ node.name }}</a></li>{% endfor %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}

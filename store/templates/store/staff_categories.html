@@ -1,0 +1,42 @@
+{# Staff tools to add, rename or remove product categories. #}
+{% extends 'store/staff_base.html' %}
+{% block staff_title %}Categories{% endblock %}
+{% block heading %}Categories{% endblock %}
+{% block sub %}<p>Categories group products in the shop and its navigation rail.</p>{% endblock %}
+
+{% block staff_content %}
+<div class="split">
+  <div>
+    <div class="tbl-wrap"><table class="tbl tbl--dense tbl--stack">
+      <thead><tr><th scope="col">Name</th><th scope="col" class="num">Products</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+      <tbody>
+      {% for category in rows %}
+        <tr>
+          <td class="span"><form class="rename-form" method="post" action="{% url 'staff_category_rename' category.pk %}">{% csrf_token %}
+            <label class="sr-only" for="cat-{{ category.pk }}">Name of category {{ category.name }}</label>
+            <input id="cat-{{ category.pk }}" name="name" value="{{ category.name }}" maxlength="80" required>
+            <button class="btn btn--ghost btn--sm" type="submit">Rename</button></form></td>
+          <td data-label="Products" class="num"><a href="{% url 'staff_products' %}?category={{ category.pk }}">{{ category.product_count }}</a></td>
+          <td class="actions">
+            {% if category.product_count %}<span class="xs muted">Move its {{ category.product_count }} product{{ category.product_count|pluralize }} before deleting.</span>
+            {% else %}<form method="post" action="{% url 'staff_category_delete' category.pk %}" data-confirm="Delete the category {{ category.name }}? It has no products.">{% csrf_token %}
+              <button class="btn btn--danger btn--sm" type="submit"><svg class="i" aria-hidden="true"><use href="#i-trash"/></svg>Delete</button></form>{% endif %}
+          </td>
+        </tr>
+      {% empty %}<tr><td colspan="3">No categories yet. Add the first one.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+  <div>
+    <section class="panel" aria-labelledby="cat-add">
+      <h2 id="cat-add">Add a category</h2>
+      <form method="post" novalidate>{% csrf_token %}
+        {% include 'store/_staff_field.html' with field=form.name hint="A short, plain name such as Switches and Sockets." %}
+        <button class="btn" type="submit" data-busy><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Add category</button>
+      </form>
+    </section>
+    <p class="note"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg><span>A category with products cannot be deleted. Open its product count, move those products to another category, then delete it.</span></p>
+  </div>
+</div>
+{% endblock %}

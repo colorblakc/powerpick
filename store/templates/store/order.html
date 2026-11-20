@@ -1,0 +1,104 @@
+{# One customer order, its items, payment, progress and available actions. #}
+{% extends "store/base.html" %}
+{% load static shop_tags %}
+{% block title %}Order #{{ order.pk }} · Power Pick{% endblock %}
+{% block styles %}<link rel="stylesheet" href="{% static 'store/account.css' %}">{% endblock %}
+{% block content %}
+<div class="wrap acct">
+  <ol class="crumbs" aria-label="Breadcrumb"><li><a href="{% url 'orders' %}">My orders</a></li><li aria-current="page">Order #{{ order.pk }}</li></ol>
+  <header class="acct-head acct-head--order">
+    <div>
+      <h1>Order #{{ order.pk }}</h1>
+      <p class="muted">Placed {{ order.created|date:"j F Y" }} at {{ order.created|date:"H:i" }} UTC</p>
+    </div>
+    <div class="row order-actions no-print">
+      <a class="btn btn--ghost" href="{% url 'receipt' order.pk %}"><svg class="i" aria-hidden="true"><use href="#i-print"/></svg>Print receipt</a>
+      {% if can_reorder %}<form method="post" action="{% url 'reorder' order.pk %}">{% csrf_token %}<button type="submit" class="btn btn--ghost" data-busy><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg>Order again</button></form>{% endif %}
+    </div>
+  </header>
+
+  {% if placed %}
+  <section class="placed" role="status" aria-labelledby="placed-h">
+    <img class="mascot" src="{% static 'store/brand/mascot-thumbsup.webp' %}" alt="" width="84" height="104">
+    <div>
+      <h2 id="placed-h">Order confirmed</h2>
+      <p>Order <b>#{{ order.pk }}</b> is placed and its items are set aside for you. Please keep <b class="price">₹{{ order.total|floatformat:"2g" }}</b> in cash ready for delivery. You can cancel it from this page until it is being prepared.</p>
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="panel track-panel" aria-labelledby="track-h">
+    <div class="track-head"><h2 id="track-h">Order status</h2><span class="tag{% if order.status_tone %} tag--{{ order.status_tone }}{% endif %}">{{ order.status }}</span></div>
+    <ol class="track{% if track.branch %} is-branched{% endif %}">
+      {% for step in track.steps %}
+      <li class="is-{{ step.state }}" style="--i:{{ forloop.counter0 }}"{% if step.state == 'current' %} aria-current="step"{% endif %}>
+        <span class="node"><svg class="i" aria-hidden="true"><use href="#i-{% if forloop.counter0 == 0 %}clock{% elif forloop.counter0 == 1 %}receipt{% elif forloop.counter0 == 2 %}package{% elif forloop.counter0 == 3 %}truck{% else %}box-open{% endif %}"/></svg></span>
+        <span class="lbl">{{ step.name }}<span class="sr-only">, {% if step.state == 'done' %}completed{% elif step.state == 'current' %}current status{% else %}not reached{% endif %}</span>{% if step.when %}<small>{{ step.when|date:"j M, H:i" }}</small>{% endif %}</span>
+      </li>
+      {% endfor %}
+      {% if track.branch %}<li class="branch is-{{ track.branch_state }} tone-{{ track.branch_tone }}"{% if track.branch %} aria-current="step"{% endif %}>
+        <span class="stem" aria-hidden="true"></span>
+        <span class="node"><svg class="i" aria-hidden="true"><use href="#i-{% if track.branch %}alert{% else %}x{% endif %}"/></svg></span>
+        <span class="lbl">{{ track.branch_label }}<span class="sr-only">, {% if track.branch %}current status{% else %}branch, not taken{% endif %}</span></span>
+      </li>{% endif %}
+    </ol>
+    {% if order.status == 'Payment review' %}<p class="notice notice--warn"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg><span>Payment arrived after this order was cancelled. Store staff will review it; you do not need to pay again.</span></p>
+    {% elif order.status == 'Cancelled' %}<p class="notice"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg><span>This order was cancelled. You can place the items in a new order with Order again.</span></p>{% endif %}
+  </section>
+
+  <div class="order-grid">
+    <section class="order-main" aria-labelledby="items-h">
+      <h2 id="items-h">Items</h2>
+      <div class="tbl-wrap">
+        <table class="tbl items">
+          <thead><tr><th scope="col">Item</th><th scope="col" class="num">Price paid</th><th scope="col" class="num">Qty</th><th scope="col" class="num">Amount</th></tr></thead>
+          <tbody>
+            {% for item, amount in lines %}
+            <tr>
+              <td data-label="Item"><span class="item-name">{% if item.product and item.product.available %}<a href="{% url 'detail' item.product.pk %}">{{ item.name }}</a>{% else %}{{ item.name }}{% endif %}</span></td>
+              <td class="num" data-label="Price paid">₹{{ item.price|floatformat:"2g" }}</td>
+              <td class="num" data-label="Qty">{{ item.quantity }}</td>
+              <td class="num" data-label="Amount">₹{{ amount|floatformat:"2g" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot><tr><th scope="row" colspan="3">Total</th><td class="num total">₹{{ order.total|floatformat:"2g" }}</td></tr></tfoot>
+        </table>
+      </div>
+      <p class="muted xs">Prices shown are what you paid when you ordered, even if the shop price has changed since.</p>
+    </section>
+
+    <aside class="order-side">
+      <section class="panel" aria-labelledby="pay-h">
+        <h2 id="pay-h">Payment</h2>
+        <dl class="kv">
+          <div><dt>Status</dt><dd><span class="tag{% if order.pay_tone %} tag--{{ order.pay_tone }}{% endif %}">{{ payment.status }}</span></dd></div>
+          <div><dt>Method</dt><dd class="paymethod">{% if payment.method == 'Razorpay' %}<img class="pay-logo" src="{% static 'store/pay/razorpay-default.svg' %}" alt="" width="18" height="18">{% endif %}{% if cod %}Cash on delivery{% else %}{{ payment.method }}{% endif %}</dd></div>
+          <div><dt>Reference</dt><dd class="mono">{% if payment.reference %}{{ payment.reference }}{% elif cod %}<span class="muted">Not needed</span>{% else %}<span class="muted">None yet</span>{% endif %}</dd></div>
+          <div><dt>Amount</dt><dd class="price">₹{{ order.total|floatformat:"2g" }}</dd></div>
+        </dl>
+        {% if payable %}
+        <div class="pay-actions no-print">
+          <a class="btn btn--block" href="{% url 'gateway_page' order.pk %}">{% if retry %}Retry payment{% else %}Complete payment{% endif %}</a>
+          <form method="post" action="{% url 'gateway_cancel' order.pk %}" data-confirm="Cancel order #{{ order.pk }}? The items reserved for it return to stock and you would need to order again.">{% csrf_token %}<button type="submit" class="btn btn--danger btn--block" data-busy>Cancel order</button></form>
+        </div>
+        <p class="muted xs">Payments are processed by Razorpay.</p>
+        {% elif cod %}
+        {% if payment.status == 'Paid' %}<p class="muted xs">Cash received on delivery. Thank you.</p>
+        {% elif order.status == 'Cancelled' %}<p class="muted xs">This order was cancelled, so nothing is due.</p>
+        {% else %}<p class="muted xs">Pay <b>₹{{ order.total|floatformat:"2g" }}</b> in cash when your order is delivered. Nothing is charged online.</p>{% endif %}
+        {% if can_cancel_cod %}
+        <div class="pay-actions no-print">
+          <form method="post" action="{% url 'order_cancel' order.pk %}" data-confirm="Cancel order #{{ order.pk }}? The items reserved for it return to stock and you would need to order again.">{% csrf_token %}<button type="submit" class="btn btn--danger btn--block" data-busy>Cancel order</button></form>
+        </div>
+        {% endif %}
+        {% endif %}
+      </section>
+      <section class="panel" aria-labelledby="ship-h">
+        <h2 id="ship-h">Delivery address</h2>
+        <address class="addr">{% if order.name %}<strong>{{ order.name }}</strong><br>{% endif %}{{ order.address|linebreaksbr }}<br><span class="mono">{{ order.phone|phone }}</span></address>
+      </section>
+    </aside>
+  </div>
+</div>
+{% endblock %}

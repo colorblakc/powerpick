@@ -1,0 +1,40 @@
+{# Product card; prices and stock come from the current product record. Usage: {% include 'store/card.html' with product=p %} (add lead=True for the wide .card--lead variant). Load store/card.css and store/catalogue.js on the page. #}
+{% with title=product.variant_group|default:product.name %}
+<article class="card{% if lead %} card--lead{% endif %}" data-card>
+  <div class="card-photo">
+    {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}" width="760" height="570" loading="lazy" decoding="async">
+    {% else %}<span class="card-noimg"><svg class="i i--lg" aria-hidden="true"><use href="#i-box-open"/></svg>{{ product.category }}</span>{% endif %}
+  </div>
+  <form class="wish-form" method="post" action="{% url 'wishlist_toggle' product.pk %}" data-wish-form>
+    {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <button class="wish-btn" type="submit" aria-pressed="{% if product.is_saved %}true{% else %}false{% endif %}" aria-label="Save {{ title }} to wishlist"><svg class="i" aria-hidden="true"><use href="#i-heart"/></svg></button>
+  </form>
+  <div class="card-body">
+    <p class="card-brand">{{ product.brand }}</p>
+    <h3 class="card-title"><a class="card-link" href="{% url 'detail' product.pk %}">{{ title }}</a></h3>
+    {% if product.spec_line %}<p class="card-spec">{{ product.spec_line }}</p>{% endif %}
+    {% if product.avg_rating %}<p class="card-rating"><span role="img" aria-label="Rated {{ product.avg_rating }} out of 5 from {{ product.review_count }} review{{ product.review_count|pluralize }}"><svg class="i i--sm" aria-hidden="true"><use href="#i-star"/></svg><b>{{ product.avg_rating }}</b> <span>({{ product.review_count }})</span></span></p>{% endif %}
+    <div class="card-stock">
+      {% if product.option_count > 1 %}
+        {% if product.any_stock %}{% if product.stock > 0 %}{% include 'store/_stock.html' with product=product %}{% else %}<span class="stock stock--high"><span aria-hidden="true"><i></i><i></i><i></i></span>Other options in stock</span>{% endif %}
+        {% else %}<span class="stock stock--out"><svg class="i i--sm" aria-hidden="true"><use href="#i-x"/></svg>Out of stock</span>{% endif %}
+      {% else %}{% include 'store/_stock.html' with product=product %}{% endif %}
+    </div>
+    <div class="card-foot">
+      <div class="card-buy">
+        <p class="price card-price">{% if product.option_count > 1 %}<small>From</small>{% endif %}₹{% if product.option_count > 1 %}{{ product.from_price|floatformat:"2g" }}{% else %}{{ product.price|floatformat:"2g" }}{% endif %}</p>
+        {% if product.option_count > 1 %}<span class="card-options">{{ product.option_count }} options</span>{% endif %}
+      </div>
+      {% if product.option_count > 1 %}
+        {% if product.any_stock %}<a class="card-act" href="{% url 'detail' product.pk %}" aria-label="Choose an option of {{ title }}"><svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></a>
+        {% else %}<button class="card-act card-act--out" type="button" disabled>Out of stock</button>{% endif %}
+      {% elif product.stock > 0 %}
+        <form class="card-add" method="post" action="{% url 'change_cart' product.pk %}" data-cart-form>
+          {% csrf_token %}<input type="hidden" name="action" value="add"><input type="hidden" name="quantity" value="1"><input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button class="card-act" type="submit" data-busy aria-label="Add {{ title }} to cart"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg><span class="sr-only">Add to cart</span></button>
+        </form>
+      {% else %}<button class="card-act card-act--out" type="button" disabled>Out of stock</button>{% endif %}
+    </div>
+  </div>
+</article>
+{% endwith %}

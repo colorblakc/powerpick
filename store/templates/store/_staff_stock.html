@@ -1,0 +1,5 @@
+{# Stock gauge with the exact count. Usage: {% include 'store/_staff_stock.html' with product=product %} #}
+{% if product.stock <= 0 %}<span class="stock stock--out"><svg class="i i--sm" aria-hidden="true"><use href="#i-x"/></svg><b>0</b>Out of stock</span>
+{% elif product.stock <= 5 %}<span class="stock stock--last"><span aria-hidden="true"><i></i><i></i><i></i></span><b>{{ product.stock }}</b>Low</span>
+{% elif product.stock <= 15 %}<span class="stock stock--low"><span aria-hidden="true"><i></i><i></i><i></i></span><b>{{ product.stock }}</b>Getting low</span>
+{% else %}<span class="stock stock--high"><span aria-hidden="true"><i></i><i></i><i></i></span><b>{{ product.stock }}</b>In stock</span>{% endif %}

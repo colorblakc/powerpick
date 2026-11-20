@@ -1,0 +1,46 @@
+{# Staff member’s own account details and avatar selection. #}
+{% extends 'store/staff_base.html' %}{% load static %}
+{% block staff_title %}My profile{% endblock %}
+{% block heading %}My profile{% endblock %}
+{% block sub %}<p>Your own staff account.</p>{% endblock %}
+
+{% block staff_content %}
+<div class="split">
+  <div>
+    <form method="post" novalidate>{% csrf_token %}
+      {% if form.errors %}<div class="notice notice--fault form-error-summary" role="alert"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg><div><b>Your details were not saved.</b> Fix the fields marked below.</div></div>{% endif %}
+      <section class="panel" aria-labelledby="me-h">
+        <h2 id="me-h">Your details</h2>
+        <div class="field-pair">
+          {% include 'store/_staff_field.html' with field=form.first_name %}
+          {% include 'store/_staff_field.html' with field=form.last_name %}
+        </div>
+        {% include 'store/_staff_field.html' with field=form.email hint="Used for account recovery and shown to colleagues." %}
+        <button class="btn" type="submit" data-busy><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Save details</button>
+      </section>
+    </form>
+  </div>
+  <div>
+    <section class="panel" aria-labelledby="staff-avatar-heading">
+      <h2 id="staff-avatar-heading">Profile picture</h2>
+      {% if user.profile.avatar_filename %}<img class="staff-profile-avatar" src="{% static user.profile.avatar_filename %}" alt="Your profile picture" width="72" height="72">{% endif %}
+      <p class="small muted">Choose a picture to show in your account.</p>
+      <p><a class="btn btn--ghost" href="{% url 'profile' %}#avatar">Choose profile picture</a></p>
+    </section>
+    <section class="panel" aria-labelledby="me-acct">
+      <h2 id="me-acct">Account</h2>
+      <dl class="meta">
+        <dt>Username</dt><dd class="mono">{{ user.username }}</dd>
+        <dt>Role</dt><dd>{% if user.is_superuser %}Administrator with full access{% else %}Staff{% endif %}</dd>
+        <dt>Last sign-in</dt><dd>{{ user.last_login|date:"j M Y, H:i"|default:"This is your first sign-in" }}</dd>
+        <dt>Member since</dt><dd>{{ user.date_joined|date:"j F Y" }}</dd>
+      </dl>
+    </section>
+    <section class="panel" aria-labelledby="me-pw">
+      <h2 id="me-pw">Password</h2>
+      <p class="small muted">Change your password regularly, and whenever you share a screen or a device.</p>
+      <p style="margin-top:var(--s3)"><a class="btn btn--ghost" href="{% url 'staff_password' %}"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg>Change password</a></p>
+    </section>
+  </div>
+</div>
+{% endblock %}
