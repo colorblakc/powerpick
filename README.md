@@ -110,7 +110,7 @@ Settings are read from the environment, or from a `.env` file in the project fol
 | `DJANGO_SECRET_KEY` | Long random secret. Required when `DJANGO_DEBUG` is `false`. |
 | `DJANGO_DEBUG` | `true` on your computer, `false` on a live site. |
 | `DJANGO_ALLOWED_HOSTS` | Comma-separated host names, for example `localhost,127.0.0.1`. |
-| `DJANGO_CSRF_TRUSTED_ORIGINS` | Space-separated origins such as `https://your-app.go.altare.global`. Needed on a live site. |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | Space-separated origins such as `https://yourname.duckdns.org`. Needed on a live site. |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | Razorpay API keys (or `RZP_KEY_ID`, `RZP_KEY_SECRET`). The code accepts `rzp_test_` keys only. |
 | `RAZORPAY_WEBHOOK_SECRET` | Signing secret for the `/payments/webhook/` endpoint. |
 | `GROQ_API_KEY` | Groq key for the assistant (or `GROQ_API`). |
@@ -129,94 +129,108 @@ Secret keys never reach the browser.
 
 ## Deployment
 
-> **Why a VPS and not a paid platform?** This is a mini-project with a limited scope, so we host it on a VPS-style container host (Altare Docker Apps, free plan) that pulls a Docker image built from this public GitHub repository. In a real-world project we would weigh the options properly and host it on a paid plan of a managed platform, with managed databases, backups, uptime guarantees and a custom domain.
+> **Why a VPS and not a paid platform?** This is a mini-project with a limited scope, so we host it on a VPS we already own (an Oracle Cloud Always Free ARM server) instead of a managed platform. The few extra pieces we added for that are a `Dockerfile`, a short start script, a GitHub Actions workflow that builds the image, a small Docker Compose file, and a free DuckDNS subdomain for the address. The same steps work on **any VPS** that can run Docker. In a real-world project we would weigh the options properly and host on a paid plan of a managed platform, with managed databases, backups, uptime guarantees and a custom domain.
 
-The shop ships as a Docker image. Every push to `main` builds the image on GitHub and publishes it to GitHub's container registry. The host then pulls and runs that image.
+How it fits together:
 
 ```
-git push  ->  GitHub Actions builds the image  ->  ghcr.io/OWNER/REPO:latest  ->  host pulls and runs it
+git push  ->  GitHub Actions builds the image  ->  ghcr.io/colorblakc/powerpick:latest
+                                                          |
+your VPS:  Docker Compose runs the image  ->  nginx (HTTPS, certbot)  ->  https://yourname.duckdns.org
+                                                          ^
+                                   DuckDNS container keeps the name pointed at the VPS
 ```
 
-### 1. Put the code on a public GitHub repository
+- **The image** is built for both Intel/AMD and ARM servers on every push to `main` (`.github/workflows/docker.yml`) and published as a public package, so the server needs no login to pull it.
+- **On start** the container runs `migrate`, loads the 36 demo products (`seed_demo`, safe to repeat) and creates the staff account from `STAFF_*` if it does not exist (`docker-entrypoint.sh`).
+- **Data** (the SQLite database and uploaded photos) lives in a Docker volume on the VPS disk, so it survives restarts and updates.
 
-Create a public repository and push the project to the `main` branch. The workflow in `.github/workflows/docker.yml` runs by itself and publishes the image as `ghcr.io/<owner>/<repo>:latest` (the name is always lower case).
+### What you need
 
-**The repository is public, so it must never contain secrets.** `.env` and `db.sqlite3` are listed in `.gitignore`; keep it that way. All keys are entered later as environment variables on the host. If a key was ever committed, treat it as leaked and create a new one.
+- A VPS with Docker and Docker Compose (Ubuntu or Debian is easiest). Install Docker with `curl -fsSL https://get.docker.com | sudo sh`.
+- Ports **80 and 443** open to the internet, in the cloud provider's firewall and in the server's own firewall. On Oracle Cloud that means an ingress rule in the VCN security list plus `iptables` rules on the instance.
+- A free [DuckDNS](https://www.duckdns.org) account.
 
-### 2. Make the image public
+### 1. Claim a DuckDNS name
 
-On GitHub open your profile, **Packages**, choose the image, then **Package settings**, and set **Change visibility** to **Public** (new packages can start as private). The host can then pull it without a login.
+Sign in at duckdns.org, add a name (for example `powerpick`), and copy your **token** from the top of the page. DuckDNS names are shared by everyone, so pick one that is free.
 
-### 3. Create the app on Altare
-
-In the Altare console open **Apps**, choose **New app**, then **Docker image**, and fill in:
-
-| Field | Value |
-|---|---|
-| Image | `ghcr.io/<owner>/<repo>:latest` |
-| Port | `8000` |
-| Data folder | `/data` (this folder is kept when a new image is deployed; the database and uploaded photos live here) |
-| Variables | see the table below |
-
-Altare gives the app an HTTPS address such as `https://your-app.go.altare.global`. Open **Settings** and add that exact address to `DJANGO_ALLOWED_HOSTS` (host name only) and `DJANGO_CSRF_TRUSTED_ORIGINS` (with `https://`). Saving the variables restarts the app. The console labels may differ slightly from the ones above.
-
-| Variable | Value |
-|---|---|
-| `DJANGO_DEBUG` | `false` |
-| `DJANGO_SECRET_KEY` | a long random secret (see [Configuration](#configuration)) |
-| `DJANGO_ALLOWED_HOSTS` | `your-app.go.altare.global` |
-| `DJANGO_CSRF_TRUSTED_ORIGINS` | `https://your-app.go.altare.global` |
-| `STAFF_USERNAME`, `STAFF_EMAIL`, `STAFF_PASSWORD` | the first staff account, created on start if missing |
-| `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | optional; Razorpay **test** keys |
-| `GROQ_API_KEY`, `GROQ_MODEL` | optional; for the assistant |
-
-Store the API keys and the staff password as **Secrets** if the console offers them; plain variables can be read by anything running in the app.
-
-### 4. What happens on every start
-
-`docker-entrypoint.sh` runs these steps, then starts the web server:
-
-1. Creates `/data/media` if it is missing.
-2. `migrate` creates or updates the database tables.
-3. `seed_demo` loads the 36 demo products, their photos and the assistant FAQs. It only adds what is missing, so repeating it is safe.
-4. `ensure_staff` creates the staff account from the `STAFF_*` variables if it does not exist.
-
-So after any restart, or after deleting and recreating the app, the demo shop and the staff login come back by themselves.
-
-### 5. Connect the Razorpay webhook (optional)
-
-In the Razorpay dashboard (Test Mode) add a webhook for `https://your-app.go.altare.global/payments/webhook/` with the `payment.captured` and `order.paid` events, and use the same value as `RAZORPAY_WEBHOOK_SECRET`. It confirms a payment even if the customer closes the browser early.
-
-### 6. Check that it works
-
-- Open the address, browse the shop and place a cash-on-delivery order.
-- Sign in at `/staff/` with the staff account, move the order to Delivered and press **Mark cash collected**.
-- If Razorpay keys are set, pay an online order with a test method, then retry a failed one.
-- Ask the assistant about a stocked product.
-
-### Updating, and starting again
-
-- **Update:** push to `main`, wait for the **Actions** tab to show the image built, then redeploy the app on Altare (or turn on its automatic image check, which looks for a new image every 15 minutes). The data folder is kept.
-- **Start again:** deleting the app and creating it again from the same image gives a fresh shop. Anything created after launch (customers, orders, reviews, uploaded photos) is removed with it; the demo products and the staff account are recreated on start.
-- **Run the image on your own computer:**
+### 2. Get the deployment files onto the server
 
 ```bash
-docker build -t powerpick .
-docker run --rm -p 8000:8000 -v powerpick-data:/data \
-  -e DJANGO_DEBUG=true -e STAFF_USERNAME=admin -e STAFF_EMAIL=you@example.com -e STAFF_PASSWORD='choose-a-long-password' \
-  powerpick
+git clone https://github.com/colorblakc/powerpick.git
+cd powerpick/deploy
+cp .env.example .env
+cp powerpick.env.example powerpick.env
 ```
+
+Edit the two files (`nano .env`, `nano powerpick.env`):
+
+| File | What to set |
+|---|---|
+| `.env` | `DUCKDNS_SUBDOMAIN`, `POWERPICK_HOST` (the full `yourname.duckdns.org`) and `DUCKDNS_TOKEN` |
+| `powerpick.env` | `DJANGO_SECRET_KEY` (a long random secret), `STAFF_EMAIL` and `STAFF_PASSWORD`, plus optional Groq and Razorpay keys |
+
+Keep both files private; they are git-ignored. See [Configuration](#configuration) for every setting.
+
+### 3. Start the app
+
+```bash
+sudo docker compose up -d
+sudo docker compose logs -f powerpick     # Ctrl+C to leave the logs
+```
+
+The app now answers on `127.0.0.1:8001` and the DuckDNS container points your name at the server.
+
+### 4. Put HTTPS in front of it (nginx and certbot)
+
+If the server has no web server yet, run `sudo apt-get install -y nginx certbot python3-certbot-nginx`. Then create `/etc/nginx/conf.d/powerpick.conf`, replacing the host name:
+
+```nginx
+server {
+    listen 80;
+    server_name yourname.duckdns.org;
+    client_max_body_size 10m;
+    location / {
+        proxy_pass http://127.0.0.1:8001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+sudo certbot --nginx -d yourname.duckdns.org --redirect
+```
+
+certbot issues the free certificate and renews it automatically. A server that already runs nginx for other sites can simply have this file added; nothing else changes. If you prefer Caddy, a two-line `Caddyfile` does the same: `yourname.duckdns.org { reverse_proxy 127.0.0.1:8001 }`.
+
+### 5. Check that it works
+
+- Open `https://yourname.duckdns.org`, browse the shop and place a cash-on-delivery order.
+- Sign in at `/staff/` with the staff account, move the order to Delivered and press **Mark cash collected**.
+- With Razorpay test keys set, pay an online order. For the optional webhook, add `https://yourname.duckdns.org/payments/webhook/` in the Razorpay dashboard with the `payment.captured` and `order.paid` events and the same secret as `RAZORPAY_WEBHOOK_SECRET`.
+
+### Updating, backups and starting again
+
+- **Update:** push to `main`, wait for the **Actions** tab to show the image built, then on the server run `sudo docker compose pull && sudo docker compose up -d`. The data volume is kept.
+- **Back up** the database and photos: `sudo docker run --rm -v deploy_powerpick_data:/data -v "$PWD":/backup alpine tar czf /backup/powerpick-data.tgz -C /data .` (the volume name starts with your folder name; check it with `sudo docker volume ls`).
+- **Start again:** `sudo docker compose down -v` deletes the data volume; the next `up` recreates the demo shop and the staff account.
 
 ### Troubleshooting
 
 | Problem | What to check |
 |---|---|
-| Altare cannot pull the image | The package must be public, and the name must be lower case and match exactly. |
-| Error 400 or a CSRF error | `DJANGO_ALLOWED_HOSTS` and `DJANGO_CSRF_TRUSTED_ORIGINS` must match the app's exact address, with `https://` in the second. |
-| App stops at start | Open the app's logs. A missing `DJANGO_SECRET_KEY` is the usual cause when `DJANGO_DEBUG` is `false`. |
-| Staff sign-in does not work | The password must pass Django's rules (not too common, at least 8 characters). A rejected password is logged and no account is made. |
+| The address does not load | `sudo docker compose ps`, and make sure ports 80 and 443 are open in both firewalls. |
+| Error 400 | `POWERPICK_HOST` in `deploy/.env` must be exactly the address you open. Restart with `sudo docker compose up -d`. |
+| CSRF error on sign-in | The page must be opened over `https://`, and nginx must send `X-Forwarded-Proto`. |
+| certbot fails | The DuckDNS name must already point at the server. Check with `getent hosts yourname.duckdns.org` and the DuckDNS container logs. |
+| The DuckDNS container exits | `DUCKDNS_TOKEN` or `DUCKDNS_SUBDOMAIN` is empty in `deploy/.env`. |
 | Online checkout unavailable | Check the `rzp_test_` key prefix and secret. |
-| Assistant gives only short FAQ answers | Check `GROQ_API_KEY` and `GROQ_MODEL`; the FAQ fallback is used when Groq cannot be reached. |
+| Assistant gives only short FAQ answers | Check `GROQ_API_KEY` and `GROQ_MODEL`. |
 
 ## Payments and security
 
@@ -235,6 +249,7 @@ requirements.txt
 .env.example            copy to .env and fill in
 Dockerfile              container image
 docker-entrypoint.sh    start-up steps: migrate, seed, staff account, web server
+deploy/                 Docker Compose file and settings examples for a VPS
 .github/workflows/      builds and publishes the image on every push to main
 powerpick/              settings, URLs, WSGI entry point
 knowledge/faq_seed.md   assistant knowledge base, loaded by seed_demo

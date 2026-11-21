@@ -1,0 +1,24 @@
+# Power Pick on any VPS with Docker. It listens on 127.0.0.1:8001 only; put nginx or Caddy in front of it.
+# The DuckDNS container keeps your free yourname.duckdns.org address pointed at this server.
+services:
+  powerpick:
+    image: ghcr.io/colorblakc/powerpick:latest
+    restart: unless-stopped
+    env_file: powerpick.env
+    environment:
+      DJANGO_ALLOWED_HOSTS: ${POWERPICK_HOST}
+      DJANGO_CSRF_TRUSTED_ORIGINS: https://${POWERPICK_HOST}
+    ports:
+      - "127.0.0.1:8001:8000"
+    volumes:
+      - powerpick_data:/data  # database and uploaded photos survive restarts and updates
+
+  duckdns:
+    image: lscr.io/linuxserver/duckdns:latest
+    restart: unless-stopped
+    environment:
+      SUBDOMAINS: ${DUCKDNS_SUBDOMAIN}
+      TOKEN: ${DUCKDNS_TOKEN}
+
+volumes:
+  powerpick_data:
