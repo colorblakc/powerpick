@@ -60,7 +60,7 @@
           <div class="rev-top"><span class="stars" role="img" aria-label="{{ r.rating }} out of 5">{% for n in stars %}<svg class="i{% if n <= r.rating %} on{% endif %}" aria-hidden="true"><use href="#i-star"/></svg>{% endfor %}</span>
             {% if r.title %}<h3>{{ r.title }}</h3>{% endif %}</div>
           <p class="rev-body">{{ r.body|linebreaksbr }}</p>
-          <div class="rev-meta"><span>{% if r.user_id == user.pk %}You{% else %}{{ r.name }}{% endif %}</span><span aria-hidden="true">/</span><time datetime="{{ r.created|date:'Y-m-d' }}">{{ r.created|date:"j M Y" }}</time><span aria-hidden="true">/</span>{% if variant_count > 1 and r.product.variant_label %}<span>Option <span class="mono">{{ r.product.variant_label }}</span></span><span aria-hidden="true">/</span>{% endif %}<span>Bought on Power Pick</span>
+          <div class="rev-meta"><span>{% if r.user_id == user.pk %}You{% else %}{{ r.name }}{% endif %}</span><span aria-hidden="true">/</span><time datetime="{{ r.created|date:'Y-m-d' }}">{{ r.created|date:"j M Y" }}</time>{% if variant_count > 1 and r.product.variant_label %}<span aria-hidden="true">/</span><span>Option <span class="mono">{{ r.product.variant_label }}</span></span>{% endif %}{% if not r.is_seeded %}<span aria-hidden="true">/</span><span>Bought on Power Pick</span>{% endif %}
             {% if r.user_id == user.pk %}
             <form method="post" action="{% url 'delete_review' product.pk %}" data-confirm="Delete your review? You can write a new one afterwards."> {% csrf_token %}<button class="link-btn" type="submit"><svg class="i i--sm" aria-hidden="true"><use href="#i-trash"/></svg> Delete my review</button></form>
             {% endif %}
@@ -68,7 +68,7 @@
         </li>
         {% endfor %}
       </ul>
-      {% if summary.count > reviews|length %}<p class="muted small rev-cap">Showing the {{ reviews|length }} most recent of {{ summary.count }} reviews.</p>{% endif %}
+      {% if summary.count > reviews|length %}<p class="muted small rev-cap">Showing {{ reviews|length }} written reviews. {{ summary.count }} ratings and reviews in total.</p>{% endif %}
       {% else %}
       <div class="empty rev-empty"><svg class="i" aria-hidden="true"><use href="#i-star"/></svg><h3>No reviews yet</h3><p>Reviews from customers who bought this product will appear here.</p></div>
       {% endif %}

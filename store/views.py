@@ -297,12 +297,13 @@ def can_review(user, product):
 
 def review_summary(ids):
     """Average, count and per-star percentages for the reviews of these product ids."""
-    ratings = list(Review.objects.filter(product_id__in=ids).values_list("rating", flat=True))
-    count = len(ratings)
-    counts = {star: ratings.count(star) for star in range(1, 6)}
+    rows = Review.objects.filter(product_id__in=ids).values("rating").annotate(n=Count("id"))
+    counts = {star: 0 for star in range(1, 6)}
+    counts.update({row["rating"]: row["n"] for row in rows})
+    count = sum(counts.values())
     bars = [dict(star=star, count=counts[star], percent=round(100 * counts[star] / count) if count else 0)
             for star in (5, 4, 3, 2, 1)]
-    average = round(sum(ratings) / count, 1) if count else None
+    average = round(sum(star * n for star, n in counts.items()) / count, 1) if count else None
     return dict(count=count, average=average, rounded=round(average) if average else 0, bars=bars)
 
 
@@ -324,9 +325,10 @@ def detail(request, pk, review_form=None):
     rows, notes = parse_specs(product.specs)
     ids = option_ids(product)
     summary = review_summary(ids)
-    reviews = list(Review.objects.filter(product_id__in=ids).select_related("user", "product")[:20])
+    reviews = list(Review.objects.filter(product_id__in=ids).exclude(body="").select_related("user", "product")[:7])
     for review in reviews:
         review.name = reviewer_name(review.user)
+        review.is_seeded = review.user.username.startswith("demo_reviewer_")
     user = request.user
     own = Review.objects.filter(product_id__in=ids, user=user).first() if user.is_authenticated else None
     eligible = can_review(user, product)

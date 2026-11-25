@@ -9,6 +9,7 @@ mkdir -p "$DATA_DIR/media"
 
 python manage.py migrate --noinput
 python manage.py seed_demo
+python manage.py seed_review_totals
 python manage.py ensure_staff
 
 exec gunicorn powerpick.wsgi:application --bind "0.0.0.0:${PORT:-8000}" --workers 2 --access-logfile -

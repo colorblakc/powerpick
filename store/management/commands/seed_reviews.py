@@ -262,7 +262,7 @@ def split(text):
 
 def build_for(product, rng, reviewers, used):
     """Pick reviewers, ratings, titles and text for one product. `used` holds sentences already shown elsewhere."""
-    count = rng.randint(3, 7)
+    count = 7
     for _ in range(200):
         ratings = rng.choices([5, 4, 3, 2], weights=[46, 37, 13, 4], k=count)
         if ratings.count(2) <= 1 and 3.9 <= sum(ratings) / count <= 4.7:
